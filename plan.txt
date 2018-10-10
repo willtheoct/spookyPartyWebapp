@@ -1,0 +1,6 @@
+drone races- timed slalom around some strings hanging from the ceiling
+in-game currency and level up system - maintained via webapp and chocolate coins
+achievements -
+	-100 pushups
+	-reach level 5
+	-invite a friend

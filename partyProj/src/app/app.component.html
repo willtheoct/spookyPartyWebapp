@@ -1,0 +1,14 @@
+<div style="width: 100%; height: 100%">
+
+    <div *ngIf="loggedIn">
+        <button type="button" class="btn btn-danger" (click)="duel()">
+            Button
+        </button>
+    </div>
+    <div *ngIf="!loggedIn">
+        <input type="text" [(ngModel)]="passphrase">
+        <button type="button" class="btn btn-primary" (click)="login()">
+            Abracalogin
+        </button>
+    </div>
+</div>
