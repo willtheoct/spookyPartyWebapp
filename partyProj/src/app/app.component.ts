@@ -8,16 +8,21 @@ import { timer } from 'rxjs/observable/timer';
 })
 export class AppComponent {
   title = 'app';
-  loggedIn = false;
+  loggedIn = localStorage.getItem("LoggedIn") ? true : false;
   passphrase = "";
   loginFailed = 0;
 
-  login() {
+  tryLogin() {
     switch (this.passphrase) {
-      case "urman": this.loggedIn = true; break;
-      case "yuan": this.loggedIn = true; break;
+      case "urman": this.login("a"); break;
+      case "yuan": this.login("b"); break;
       default: this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
+  }
+
+  login(id = "") {
+    localStorage.setItem("LoggedIn", "true");
+    localStorage.setItem("loginId", id);
   }
 
 
