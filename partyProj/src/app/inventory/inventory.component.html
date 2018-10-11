@@ -1,0 +1,5 @@
+<div style="width: 100vw;height: 100vh;display: grid; grid-auto-columns: 200px 30px">
+  <div class="col" *ngFor="let item of items" style="margin: 1em">
+    <b>{{item.count}}</b>  {{currencyNameOf(item.type)}}
+  </div>
+</div>

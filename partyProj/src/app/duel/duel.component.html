@@ -1,0 +1,19 @@
+<div *ngIf="!target" style="height: 100vh; width:200px">
+  <h4>
+    Duel...
+  </h4>
+  <div style="overflow-y: scroll; height: 90%">
+    <app-playerlist (selectedPlayer)="selectTarget($event)" style="width: 100%">
+    </app-playerlist>
+  </div>
+</div>
+<div *ngIf="target" style="height: 100%">
+  <h4>
+    Select a referee
+  </h4>
+  <div style="overflow-y: scroll">
+    <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
+
+    </app-playerlist>
+  </div>
+</div>

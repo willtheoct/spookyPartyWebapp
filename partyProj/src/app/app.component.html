@@ -1,24 +1,11 @@
-<div style="width: 100%; height: 100%">
-
-    <div *ngIf="loggedIn" class="flex-column">
-        <button type="button" class="btn btn-danger" (click)="duel()">
-            Duel...
-        </button>
-        <button type="button" class="btn btn-primary" (click)="duel()">
-            Trade...
-        </button>
-        <button type="button" class="btn btn-primary" (click)="duel()">
-            Trade...
-        </button>
-        <div class="notifications">
-
-        </div>
-    </div>
-    <div *ngIf="!loggedIn">
-        <input type="text" [(ngModel)]="passphrase">
-        <button type="button" class="btn btn-primary" (click)="login()">
-            AbracaLOGIN
-        </button>
-        <ngb-alert type="danger" *ngIf="loginFailed">Alert</ngb-alert>
-    </div>
+<router-outlet>
+</router-outlet>
+<div *ngIf="loggedIn" style="width: 100%; height: 100%">
+</div>
+<div *ngIf="!loggedIn" class="flex-column" style="width: 200px">
+    <input type="text" [(ngModel)]="passphrase">
+    <button type="button" class="btn btn-primary" (click)="tryLogin()">
+        AbracaLOGIN
+    </button>
+    <ngb-alert type="danger" *ngIf="loginFailed" [dismissible]="false">Wrong passphrase. Try again!</ngb-alert>
 </div>

@@ -1,0 +1,14 @@
+<div class="flex-column" style="width: 200px; height:100%; left:50%; right:0">
+  <button type="button" class="btn btn-primary" (click)="trade()">
+    Trade 💱
+  </button>
+  <button type="button" class="btn btn-primary" (click)="craft()">
+    Craft 🔨
+  </button>
+  <button type="button" class="btn btn-danger" (click)="duel()">
+    Duel ⚔
+  </button>
+</div>
+<div class="notifications flex-column">
+  <ngb-alert type="info" [dismissible]="false" *ngFor="let alert of notifications">{{alert}}</ngb-alert>
+</div>

@@ -9,3 +9,6 @@ div{
     align-content: center;
     display: flex;
 }
+button{
+    margin: 0.5em;
+}

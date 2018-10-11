@@ -1,0 +1,9 @@
+<div *ngFor="let player of players" style="width: 100%" class="flex-column">
+  <button type="button" class="btn btn-primary" (click)="selectedPlayer.emit(player)">
+    <h6>
+
+      {{player.characterName}}
+    </h6>
+    <br> Level {{player.level}}
+  </button>
+</div>
