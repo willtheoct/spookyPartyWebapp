@@ -10,6 +10,14 @@
             "name": "Launch Chrome against localhost",
             "url": "http://localhost:4200",
             "webRoot": "${workspaceFolder}/src"
+        },
+        {
+            "name": "Launch firefox",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://localhost/",
+            "webRoot": "${workspaceFolder}/src"
         }
     ]
 }

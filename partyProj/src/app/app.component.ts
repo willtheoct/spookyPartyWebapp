@@ -1,20 +1,57 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { timer } from 'rxjs/observable/timer';
 import { Router } from '@angular/router';
-import { playerIds } from '../models/partyGoer.model';
+import { playerIds, PartyGoer } from '../models/partyGoer.model';
+import { currency, currencies } from '../models/currency.model';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class
+  AppComponent implements OnInit {
+
+  mockPlayerInventories() {
+    {
+      let p = new PartyGoer();
+      let c = new currency();
+      c.count = 1;
+      c.type = currencies.gold;
+      p.inventory.push(c)
+      p.id = playerIds.adventurer;
+      PartyGoer.onlinePlayers.push(p);
+    }
+    {
+      let p = new PartyGoer();
+      let c = new currency();
+      c.count = 4;
+      c.type = currencies.silver;
+      p.inventory.push(c)
+      p.id = playerIds.wizard;
+      PartyGoer.onlinePlayers.push(p);
+    }
+    {
+      let p = new PartyGoer();
+      let c = new currency();
+      c.count = 2;
+      c.type = currencies.silver;
+      p.inventory.push(c)
+      p.id = playerIds.hargar;
+      PartyGoer.onlinePlayers.push(p);
+    }
+  }
+
+  ngOnInit(): void {
+    this.mockPlayerInventories();
+    AppComponent.userId = playerIds[localStorage.getItem("loginId")];
+  }
   title = 'app';
   loggedIn = localStorage.getItem("LoggedIn") ? true : false;
   passphrase = "";
   loginFailed = 0;
   static username = "";
-  static userId;
+  static userId: playerIds;
 
 
   tryLogin() {
@@ -30,7 +67,7 @@ export class AppComponent {
     AppComponent.userId = id;
     AppComponent.username = playerIds[id];
     localStorage.setItem("LoggedIn", "true");
-    localStorage.setItem("loginId", id.toString());
+    localStorage.setItem("loginId", playerIds[id]);
     this.loggedIn = true;
   }
 }

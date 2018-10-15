@@ -14,6 +14,5 @@ export enum currencies {
 
 export class currency {
     type: currencies;
-    iconUrl: string;
     count = 0;
 }

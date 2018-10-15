@@ -3,13 +3,24 @@
     Duel...
   </h4>
   <div style="overflow-y: scroll; height: 90%">
-    <app-playerlist (selectedPlayer)="selectTarget($event)" style="width: 100%">
+    <app-playerlist (selectedPlayer)="selectTarget($event)" style="width: 100%" [(players)]="availableDuelists">
     </app-playerlist>
   </div>
 </div>
-<div *ngIf="target" style="height: 100%">
+<div *ngIf="target" class="flex-column" style="width: 200px">
+  <input type="text" placeholder="what kind of duel?" [(ngModel)]="description">
+  <h3>Wager your...</h3>
+  <app-inventory [(player)]="thisPlayer">
+
+  </app-inventory>
+  <h3>For their...</h3>
+  <app-inventory [(player)]="target">
+
+  </app-inventory>
+</div>
+<div *ngIf="referee" style="height: 100%">
   <h4>
-    Select a referee
+    Select a witness
   </h4>
   <div style="overflow-y: scroll">
     <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
