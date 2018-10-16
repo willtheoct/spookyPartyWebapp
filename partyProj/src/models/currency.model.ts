@@ -13,6 +13,7 @@ export enum currencies {
 }
 
 export class currency {
-    type: currencies;
-    count = 0;
+    constructor(
+        public type: currencies,
+        public count = 0) { }
 }

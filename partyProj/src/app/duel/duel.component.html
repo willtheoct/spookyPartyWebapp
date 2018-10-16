@@ -1,4 +1,4 @@
-<div *ngIf="!target" style="height: 100vh; width:200px">
+<div *ngIf="!target">
   <h4>
     Duel...
   </h4>
@@ -7,16 +7,20 @@
     </app-playerlist>
   </div>
 </div>
-<div *ngIf="target" class="flex-column" style="width: 200px">
-  <input type="text" placeholder="what kind of duel?" [(ngModel)]="description">
-  <h3>Wager your...</h3>
-  <app-inventory [(player)]="thisPlayer">
+<div *ngIf="target" class="flex-column">
+  <label for="duelDesc">What kind of duel?</label>
+  <input type="text" [placeholder]="randomPlaceholder" [(ngModel)]="description">
+  <div class="flex-column">
 
-  </app-inventory>
-  <h3>For their...</h3>
-  <app-inventory [(player)]="target">
+    <h3>Wager your...</h3>
+    <app-inventory [(player)]="thisPlayer">
 
-  </app-inventory>
+    </app-inventory>
+    <h3>For their...</h3>
+    <app-inventory [(player)]="target">
+
+    </app-inventory>
+  </div>
 </div>
 <div *ngIf="referee" style="height: 100%">
   <h4>

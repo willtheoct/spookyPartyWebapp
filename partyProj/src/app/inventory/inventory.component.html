@@ -1,5 +1,5 @@
-<div style="display: grid; grid-auto-columns: 200px 30px">
-  <div class="col" *ngFor="let item of items" style="margin: 1em" (click)="selectItem(item)">
-    <b>{{item.count}}</b>  {{currencyNameOf(item.type)}}
-  </div>
+<div class="col" *ngFor="let item of items" style="margin: 1em">
+  <div (click)="addItem(item.type)">▲</div>
+  {{selections[item.type].count}}/<b>{{item.count}}</b>  {{currencyNameOf(item.type)}}
+  <div (click)="removeItem(item.type)">▼</div>
 </div>

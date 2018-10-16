@@ -15,7 +15,7 @@ export class InventoryComponent implements OnInit {
   player: PartyGoer;
 
   @Output()
-  selections: currency[] = [];
+  selections: currency[] = Object.values(currencies).slice(Object.keys(currencies).length / 2).map(x => new currency(x, 0));
 
   constructor() { }
 
@@ -23,7 +23,7 @@ export class InventoryComponent implements OnInit {
     if (isNullOrUndefined(this.player)) {
       this.player = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
     }
-    this.items = this.player.inventory;
+    this.items = Object.values(currencies).slice(Object.keys(currencies).length / 2).map(x => new currency(x, this.player.inventory[x]));
     console.log("inventory init");
   }
 
@@ -32,8 +32,15 @@ export class InventoryComponent implements OnInit {
     return currencies[c];
   }
 
-  selectItem(c: currency) {
-    this.selections.push(c);
+  addItem(type: currencies) {
+    this.selections[type].count++;
+    this.selections[type].count = Math.min(this.selections[type].count, this.player.inventory[type]);
+  }
+
+  removeItem(type: currencies) {
+    this.selections[type].count--;
+    this.selections[type].count = Math.max(this.selections[type].count, 0);
+    console.log(this.selections);
   }
 
 }

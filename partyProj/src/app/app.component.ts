@@ -12,38 +12,35 @@ import { currency, currencies } from '../models/currency.model';
 export class
   AppComponent implements OnInit {
 
-  mockPlayerInventories() {
+  mockplayers() {
     {
       let p = new PartyGoer();
-      let c = new currency();
-      c.count = 1;
-      c.type = currencies.gold;
-      p.inventory.push(c)
       p.id = playerIds.adventurer;
+      p.inventory[currencies.bronze] = 1;
+      p.inventory[currencies.silver] = 1;
+      p.inventory[currencies.starbucks] = 1;
+      p.characterName = "Alex the Adventurer"
       PartyGoer.onlinePlayers.push(p);
     }
     {
       let p = new PartyGoer();
-      let c = new currency();
-      c.count = 4;
-      c.type = currencies.silver;
-      p.inventory.push(c)
       p.id = playerIds.wizard;
+      p.characterName = "will the wizard";
+      p.inventory[currencies.rupees] = 1;
+      p.inventory[currencies.ironOre] = 100;
+      p.inventory[currencies.gold] = 3;
       PartyGoer.onlinePlayers.push(p);
     }
     {
       let p = new PartyGoer();
-      let c = new currency();
-      c.count = 2;
-      c.type = currencies.silver;
-      p.inventory.push(c)
       p.id = playerIds.hargar;
+      p.characterName = "hargar the harbinger"
       PartyGoer.onlinePlayers.push(p);
     }
   }
 
   ngOnInit(): void {
-    this.mockPlayerInventories();
+    this.mockplayers();
     AppComponent.userId = playerIds[localStorage.getItem("loginId")];
   }
   title = 'app';
