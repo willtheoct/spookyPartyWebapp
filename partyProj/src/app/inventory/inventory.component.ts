@@ -14,7 +14,7 @@ export class InventoryComponent implements OnInit {
   @Input()
   player: PartyGoer;
 
-  @Output()
+  @Input()
   selections: currency[] = Object.values(currencies).slice(Object.keys(currencies).length / 2).map(x => new currency(x, 0));
 
   constructor() { }

@@ -37,6 +37,18 @@ export class
       p.characterName = "hargar the harbinger"
       PartyGoer.onlinePlayers.push(p);
     }
+    {
+      let p = new PartyGoer();
+      p.id = playerIds.asdf;
+      p.characterName = "asdf"
+      PartyGoer.onlinePlayers.push(p);
+    }
+    {
+      let p = new PartyGoer();
+      p.id = playerIds.overlord;
+      p.characterName = "Ivan the Overlord"
+      PartyGoer.onlinePlayers.push(p);
+    }
   }
 
   ngOnInit(): void {

@@ -1,34 +1,44 @@
-<div *ngIf="!target">
+<div *ngIf="!target" class="flex-column">
   <h4>
     Duel...
   </h4>
-  <div style="overflow-y: scroll; height: 90%">
-    <app-playerlist (selectedPlayer)="selectTarget($event)" style="width: 100%" [(players)]="availableDuelists">
-    </app-playerlist>
-  </div>
+  <app-playerlist (selectedPlayer)="selectTarget($event)" [(players)]="availableDuelists">
+  </app-playerlist>
 </div>
-<div *ngIf="target" class="flex-column">
-  <label for="duelDesc">What kind of duel?</label>
-  <input type="text" [placeholder]="randomPlaceholder" [(ngModel)]="description">
+<div *ngIf="target &&! wagered" class="flex-column" style="height: 100vh; overflow: scroll">
+
   <div class="flex-column">
+    <label for="duelDesc">What kind of duel?</label>
+    <div class="flex-row">
+
+      <input type="text" id="duelDesc" [placeholder]="randomPlaceholder" [(ngModel)]="description">
+      <div class="flex-row">
+        <button type="button" class="btn btn-primary" (click)="wagered=true">
+          OKAY
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="flex-column" style="overflow: scroll; overflow-x: hidden;">
 
     <h3>Wager your...</h3>
-    <app-inventory [(player)]="thisPlayer">
+    <app-inventory [(player)]="thisPlayer" [(selections)]="myInventoryWager">
 
     </app-inventory>
     <h3>For their...</h3>
-    <app-inventory [(player)]="target">
+    <app-inventory [(player)]="target" [(selections)]="targetInventoryWager">
 
     </app-inventory>
   </div>
 </div>
-<div *ngIf="referee" style="height: 100%">
+<div *ngIf="wagered" style="height: 100%" class="flex-column">
+  <button type="button" class="btn btn-danger" style="width: 5em; justify-self: left" (click)="wagered=false">
+    Back
+  </button>
   <h4>
     Select a witness
   </h4>
-  <div style="overflow-y: scroll">
-    <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
+  <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
 
-    </app-playerlist>
-  </div>
+  </app-playerlist>
 </div>

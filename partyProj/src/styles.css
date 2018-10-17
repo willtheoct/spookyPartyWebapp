@@ -8,6 +8,7 @@ div, router-outlet, h4{
     align-self: center;
     align-content: center;
     display: flex;
+    box-sizing: border-box;
 }
 button{
     margin: 0.5em;
