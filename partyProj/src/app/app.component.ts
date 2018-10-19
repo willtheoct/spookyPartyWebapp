@@ -61,6 +61,7 @@ export class
   loginFailed = 0;
   static username = "";
   static userId: playerIds;
+  static hostServer = "http://localhost:8220/"
 
 
   tryLogin() {

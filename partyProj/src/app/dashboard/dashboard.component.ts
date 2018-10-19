@@ -19,9 +19,9 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.notifications.push(new notification("test"))
-    interval(2000).subscribe(() => {
+    interval(5000).subscribe(() => {
 
-      this.http.get<notification[]>("notifications?user=" + AppComponent.userId).subscribe(x => this.notifications = x);
+      //this.http.get<notification[]>("notifications?user=" + AppComponent.userId).subscribe(x => this.notifications = x);
     });
   }
 
