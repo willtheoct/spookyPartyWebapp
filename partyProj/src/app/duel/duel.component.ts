@@ -6,6 +6,7 @@ import { AppComponent } from '../app.component';
 import { currency, currencies } from '../../models/currency.model';
 import { interval } from 'rxjs/observable/interval';
 import { Router } from '@angular/router';
+import { DashboardComponent } from '../dashboard/dashboard.component';
 
 @Component({
   selector: 'app-duel',
