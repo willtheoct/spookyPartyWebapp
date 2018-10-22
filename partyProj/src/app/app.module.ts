@@ -13,6 +13,7 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { PlayerlistComponent } from './playerlist/playerlist.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { StatsComponent } from './stats/stats.component';
+import { TradeComponent } from './trade/trade.component';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { StatsComponent } from './stats/stats.component';
     DashboardComponent,
     PlayerlistComponent,
     InventoryComponent,
-    StatsComponent
+    StatsComponent,
+    TradeComponent
   ],
   imports: [
     BrowserModule,

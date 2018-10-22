@@ -1,0 +1,10 @@
+<div *ngIf="!target">
+  Trade with...
+  <app-playerlist (selectedPlayer)="selectTarget(($event))" [(players)]="players">
+
+  </app-playerlist>
+</div>
+<div *ngIf="target">
+  <app-inventory [(selections)]="MyTradeOffer"></app-inventory>
+  <app-inventory [(player)]="target" [(selections)]="TheirTradeOffer"></app-inventory>
+</div>

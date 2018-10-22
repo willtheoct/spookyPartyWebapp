@@ -21,21 +21,27 @@ namespace spookyWebServer
         {
             var testNote = new notification();
             testNote.text = "Crystal ball is working";
-            _notifications.Add(0, new List<notification> { testNote});
+            _notifications.Add(0, new List<notification> { testNote });
+            /*
+            var playermock = new PartyGoer();
+            playermock.id = 2;
+            playermock.level = 4;
+            playermock.characterName = "will";
+            playermock.inventory = new int[] { 10, 42, 3, 4, 5, 2, 0, 0, 0, 0 };
+            _players[0]= playermock;
+            */
 
 
             #region setup
             var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
-            _players = json.read<PartyGoer[]>(playerDb).ToDictionary(x => x.id, x => x);
+            _players = (json.read<PartyGoer[]>(playerDb)??new PartyGoer[] { }).ToDictionary(x => x.id, x => x);
             playerDb.Close();
 
             var duelDb = File.Open("ActiveDuels.json", FileMode.OpenOrCreate);
-            activeDuelChallenges = (json.read<duel[]>(duelDb)??new duel[]{ }).ToList();
+            activeDuelChallenges = (json.read<duel[]>(duelDb) ?? new duel[] { }).ToList();
             duelDb.Close();
 
-            var notificationDb = File.Open("Notifications.json", FileMode.OpenOrCreate);
-            _players = json.read<PartyGoer[]>(notificationDb).ToDictionary(x => x.id, x => x);
-            notificationDb.Close();
+            Console.WriteLine("Loaded " + _players.Count + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
             #endregion
 
             http.Start();
@@ -73,7 +79,6 @@ namespace spookyWebServer
             {
                 case "GET":
                     json.write(context.Response.OutputStream, _players);
-                    Console.WriteLine(_players);
                     break;
             }
         }
@@ -85,10 +90,8 @@ namespace spookyWebServer
                 case "GET":
                     var user = int.Parse(context.Request.QueryString[0]);
                     json.write(context.Response.OutputStream, _notifications[user]);
-                    context.Response.Close();
                     break;
             }
-            context.Request.InputStream.Close();
         }
 
         private static void options(HttpListenerContext context)
@@ -98,7 +101,6 @@ namespace spookyWebServer
             response.Headers.Add("Access-Control-Allow-Methods: PUT, GET, POST, DELETE, OPTIONS");
             response.Headers.Add("Access-Control-Allow-Headers: Content-Type, origin");
             response.OutputStream.Write(body, 0, 0);
-            response.OutputStream.Close();
         }
 
         private static void duel(HttpListenerContext context)
@@ -129,7 +131,6 @@ namespace spookyWebServer
                     var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
                     json.write(db, activeDuelChallenges);
                     db.Close();
-                    context.Request.InputStream.Close();
                     break;
                 case "DELETE":
                     break;

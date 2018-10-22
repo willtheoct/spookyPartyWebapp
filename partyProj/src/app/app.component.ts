@@ -57,6 +57,8 @@ export class
   }
 
   ngOnInit(): void {
+    this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
+      .subscribe(x => PartyGoer.onlinePlayers = x);
     interval(10000).subscribe(() =>
       this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
         .subscribe(x => PartyGoer.onlinePlayers = x));

@@ -32,7 +32,7 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(["/duel"]);
   }
   trade() {
-
+    this.router.navigate(["/trade"]);
   }
   craft() {
     this.router.navigate(["/inventory"]);
