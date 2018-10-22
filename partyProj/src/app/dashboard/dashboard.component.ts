@@ -13,15 +13,16 @@ import { AppComponent } from '../app.component';
 })
 export class DashboardComponent implements OnInit {
   notifications: notification[] = [];
+  playerId: playerIds = AppComponent.userId;
 
   constructor(private router: Router, private http: HttpClient) {
   }
 
   ngOnInit() {
-    this.notifications.push(new notification("test"))
     interval(5000).subscribe(() => {
 
-      //this.http.get<notification[]>("notifications?user=" + AppComponent.userId).subscribe(x => this.notifications = x);
+      this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId).subscribe(x => this.notifications = x);
+      console.log(this.notifications);
     });
   }
 

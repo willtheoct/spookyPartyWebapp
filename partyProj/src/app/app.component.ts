@@ -3,6 +3,8 @@ import { timer } from 'rxjs/observable/timer';
 import { Router } from '@angular/router';
 import { playerIds, PartyGoer } from '../models/partyGoer.model';
 import { currency, currencies } from '../models/currency.model';
+import { HttpClient } from '@angular/common/http';
+import { interval } from 'rxjs/observable/interval';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +13,9 @@ import { currency, currencies } from '../models/currency.model';
 })
 export class
   AppComponent implements OnInit {
+  constructor(private http: HttpClient) {
+
+  }
 
   mockplayers() {
     {
@@ -52,7 +57,9 @@ export class
   }
 
   ngOnInit(): void {
-    this.mockplayers();
+    interval(10000).subscribe(() =>
+      this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
+        .subscribe(x => PartyGoer.onlinePlayers = x));
     AppComponent.userId = playerIds[localStorage.getItem("loginId")];
   }
   title = 'app';

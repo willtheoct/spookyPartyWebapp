@@ -12,6 +12,7 @@ import { DuelComponent } from './duel/duel.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { PlayerlistComponent } from './playerlist/playerlist.component';
 import { InventoryComponent } from './inventory/inventory.component';
+import { StatsComponent } from './stats/stats.component';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { InventoryComponent } from './inventory/inventory.component';
     DuelComponent,
     DashboardComponent,
     PlayerlistComponent,
-    InventoryComponent
+    InventoryComponent,
+    StatsComponent
   ],
   imports: [
     BrowserModule,
