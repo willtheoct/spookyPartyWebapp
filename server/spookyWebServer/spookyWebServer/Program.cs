@@ -15,8 +15,8 @@ namespace spookyWebServer
     {
         static HttpListener http = new HttpListener();
         static List<duel> activeDuelChallenges = new List<duel>();
-        static Dictionary<int, List< notification>> _notifications = new Dictionary<int, List<notification>>();
-        static Dictionary<int, PartyGoer> _players = new Dictionary<int, PartyGoer>();
+        static Dictionary<int, List<notification>> _notifications = new Dictionary<int, List<notification>>();
+        static PartyGoer[] _players = new PartyGoer[]{};
         static int Main(string[] args)
         {
             var testNote = new notification();
@@ -34,14 +34,15 @@ namespace spookyWebServer
 
             #region setup
             var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
-            _players = (json.read<PartyGoer[]>(playerDb)??new PartyGoer[] { }).ToDictionary(x => x.id, x => x);
+            //json.write(playerDb, _players);
+            _players = (json.read<PartyGoer[]>(playerDb)??new PartyGoer[] { });
             playerDb.Close();
 
             var duelDb = File.Open("ActiveDuels.json", FileMode.OpenOrCreate);
             activeDuelChallenges = (json.read<duel[]>(duelDb) ?? new duel[] { }).ToList();
             duelDb.Close();
 
-            Console.WriteLine("Loaded " + _players.Count + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
+            Console.WriteLine("Loaded " + _players.Length + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
             #endregion
 
             http.Start();
@@ -158,68 +159,4 @@ namespace spookyWebServer
         }
 
     }
-
-    public static class json
-    {
-        public static void write<T>( Stream stream, T obj)
-        {
-            var writer = new DataContractJsonSerializer(typeof(T));
-            writer.WriteObject(stream, obj);
-        }
-        public static T read<T>(Stream stream)
-        {
-            var reader = new DataContractJsonSerializer(typeof(T));
-            return (T) reader.ReadObject(stream);
-        }
-    }
-
-
-    #region model
-    [DataContract]
-    public struct duel
-    {
-        [DataMember]
-        public int src;
-        [DataMember]
-        public currency[] srcWager;
-        [DataMember]
-        public int target;
-        [DataMember]
-        public currency[] targetWager;
-        [DataMember]
-        public int referee;
-    }
-    [DataContract]
-    public struct currency
-    {
-        [DataMember]
-        public int Type;
-        [DataMember]
-        public int count;
-    }
-    [DataContract]
-    public struct currencies
-    {
-    }
-    [DataContract]
-    public struct notification
-    {
-        [DataMember]
-        public string text;
-    }
-    [DataContract]
-    public struct PartyGoer
-    {
-        [DataMember]
-        public string characterName;
-        [DataMember]
-        public int id;
-        [DataMember]
-        public int level;
-        [DataMember]
-        public int[] inventory;
-
-
-    }
-    #endregion
 }

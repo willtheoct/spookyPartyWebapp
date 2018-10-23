@@ -63,6 +63,7 @@ export class
       this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
         .subscribe(x => PartyGoer.onlinePlayers = x));
     AppComponent.userId = playerIds[localStorage.getItem("loginId")];
+    console.log("logged in as " + AppComponent.userId);
   }
   title = 'app';
   loggedIn = localStorage.getItem("LoggedIn") ? true : false;

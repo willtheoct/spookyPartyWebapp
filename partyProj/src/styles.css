@@ -10,8 +10,20 @@ div, router-outlet, h4{
     display: flex;
     box-sizing: border-box;
 }
+@keyframes splooshIn{
+    0% {
+        transform:scale(1.2);
+        opacity: 0;
+    }
+    100% {
+        transform:scale(1);
+        opacity:1;
+    }
+}
 button{
     margin: 0.5em;
+    animation: splooshIn 120ms ease-in-out;
+
 }
 .alert:last-child{
     margin-bottom: 0;
