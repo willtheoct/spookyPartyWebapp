@@ -81,11 +81,12 @@ export class
 
 
   tryLogin() {
-    if (PartyGoer.onlinePlayers.some(x => x.passPhrase === this.passphrase)) {
-      this.login(PartyGoer.onlinePlayers.find(x => x.passPhrase === this.passphrase).id);
+    let id = PartyGoer.onlinePlayers.find(x => x.passPhrase === this.passphrase).id;
+    if (isNullOrUndefined(id)) {
+      this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
     else {
-      this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
+      this.http.get(AppComponent.hostServer + "login?userId=" + id);
     }
   }
 

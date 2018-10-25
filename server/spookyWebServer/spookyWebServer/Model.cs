@@ -52,6 +52,8 @@ namespace spookyWebServer
         public int[] inventory;
         [DataMember]
         public string passPhrase;
+        [DataMember]
+        public notification[] notifications;
 
 
     }

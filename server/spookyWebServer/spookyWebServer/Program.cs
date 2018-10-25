@@ -1,4 +1,6 @@
-﻿using System;
+﻿//#define serveStaticPages
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,14 +18,14 @@ namespace spookyWebServer
         static HttpListener http = new HttpListener();
         static List<duel> activeDuelChallenges = new List<duel>();
         static Dictionary<int, List<notification>> _notifications = new Dictionary<int, List<notification>>();
-        static PartyGoer[] _players = new PartyGoer[]{};
+        static PartyGoer[] _players = new PartyGoer[] { };
+        static PartyGoer[] _onlinePlayers = new PartyGoer[] { };
 
+#if serveStaticPages
         static Dictionary<string, byte[]> serverPages = new Dictionary<string, byte[]>();
+#endif
         static int Main(string[] args)
         {
-            var testNote = new notification();
-            testNote.text = "Crystal ball is working";
-            _notifications.Add(0, new List<notification> { testNote });
             /*
             var playermock = new PartyGoer();
             playermock.id = 2;
@@ -31,8 +33,10 @@ namespace spookyWebServer
             playermock.characterName = "will";
             playermock.inventory = new int[] { 10, 42, 3, 4, 5, 2, 0, 0, 0, 0 };
             _players[0]= playermock;
+            
             */
 
+#if serveStaticPages
             foreach (var file in Directory.EnumerateFiles("./www/"))
             {
                 var fileFromRoot = file.Remove(0, "./www/".Length);
@@ -41,59 +45,69 @@ namespace spookyWebServer
                 stream.Read(bytes, 0, (int)stream.Length);
                 serverPages[fileFromRoot] = bytes;
             }
+#endif
 
-            #region setup
+#region setup
             var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
             //json.write(playerDb, _players);
-            _players = (json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { });
+            _players = json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { };
             playerDb.Close();
 
             var duelDb = File.Open("ActiveDuels.json", FileMode.OpenOrCreate);
             activeDuelChallenges = (json.read<duel[]>(duelDb) ?? new duel[] { }).ToList();
             duelDb.Close();
 
+            var onlinePlayerFile = File.Open("onlinePlayers.json",FileMode.OpenOrCreate);
+            _onlinePlayers = json.read<PartyGoer[]>(onlinePlayerFile);
+            onlinePlayerFile.Close();
+
             Console.WriteLine("Loaded " + _players.Length + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
-            #endregion
+#endregion
 
             http.Prefixes.Add("http://localhost:8220/");
             http.Start();
 
             while (true)
             {
-                try
+                var context = http.GetContext();
+                var request = context.Request;
+                context.Response.Headers.Add("Access-Control-Allow-Origin: *");
+                context.Response.Headers.Add("Cache-Control: max-age=0");
+                var segments = request.Url.Segments.ToList();
+
+                Console.Write(request.RawUrl);
+
+                if (request.HttpMethod == "OPTIONS")
                 {
-                    var context = http.GetContext();
-                    var request = context.Request;
-                    context.Response.Headers.Add("Access-Control-Allow-Origin: *");
-                    context.Response.Headers.Add("Cache-Control: max-age=0");
-                    var segments = request.Url.Segments.ToList();
-
-                    Console.Write(request.RawUrl);
-
-                    if (request.HttpMethod == "OPTIONS")
-                    {
-                        options(context);
-                    }
-                    else if (segments.Count == 1)
-                    {
-                        segments.Add("index.html");
-                    }
-                    switch (segments[1])
-                    {
-                        case "duelChallenge":
-                            duelChallenge(context); break;
-                        case "duels":
-                            duels(context); break;
-                        case "notifications":
-                            notifications(context);
-                            break;
-                        case "players":
-                            players(context);
-                            break;
-                        case "unlocks":
-                            unlock(context);
-                            break;
-                        default:
+                    options(context);
+                }
+                else if (segments.Count == 1)
+                {
+                    segments.Add("index.html");
+                }
+                switch (segments[1])
+                {
+                    case "duelChallenge":
+                        duelChallenge(context); break;
+                    case "duels":
+                        duels(context); break;
+                    case "notifications":
+                        notifications(context);
+                        break;
+                    case "players":
+                        players(context);
+                        break;
+                    case "onlinePlayers":
+                        onlinePlayers(context);
+                        break;
+                    case "unlocks":
+                        unlock(context);
+                        break;
+                    case "login":
+                        login(context);
+                        break;
+                    default:
+#if serveStaticPages
                             if (request.HttpMethod == "GET")
                             {
                                 byte[] page;
@@ -107,15 +121,20 @@ namespace spookyWebServer
                                 }
                                 context.Response.OutputStream.Write(page, 0, page.Length);
                             }
-                            break;
-                    }
-                    context.Response.Close();
+#endif
+                        break;
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                }
+                context.Response.Close();
             }
+        }
+
+        private static void login(HttpListenerContext context)
+        {
+            var id =int.Parse( context.Request.QueryString["userId"]);
+            _onlinePlayers[id] = _players[id];
+            var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
+            json.write(onlinePlayerFile, _onlinePlayers);
+            onlinePlayerFile.Close();
         }
 
         private static void unlock(HttpListenerContext context)
@@ -160,17 +179,27 @@ namespace spookyWebServer
             }
         }
 
+#if serveStaticPages
         private static void serveStaticPage(HttpListenerContext context)
         {
             var request = context.Request;
         }
-
+#endif
         private static void players(HttpListenerContext context)
         {
             switch (context.Request.HttpMethod)
             {
                 case "GET":
                     json.write(context.Response.OutputStream, _players);
+                    break;
+            }
+        }
+        private static void onlinePlayers(HttpListenerContext context)
+        {
+            switch (context.Request.HttpMethod)
+            {
+                case "GET":
+                    json.write(context.Response.OutputStream, _onlinePlayers);
                     break;
             }
         }
@@ -181,7 +210,7 @@ namespace spookyWebServer
             {
                 case "GET":
                     var user = int.Parse(context.Request.QueryString[0]);
-                    json.write(context.Response.OutputStream, _notifications[user]);
+                    json.write(context.Response.OutputStream, _players[user].notifications);
                     break;
             }
         }

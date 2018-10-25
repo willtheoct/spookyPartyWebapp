@@ -12,6 +12,7 @@ import { AppComponent } from '../app.component';
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
+  static notifications: notification[] = [];
   notifications: notification[] = [];
   playerId: playerIds = AppComponent.userId;
 
@@ -22,10 +23,11 @@ export class DashboardComponent implements OnInit {
     interval(5000).subscribe(() => {
       if (AppComponent.loggedIn) {
 
-        this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => this.notifications = x);
-        console.log(this.notifications);
+        this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => DashboardComponent.notifications = x);
+        this.notifications = DashboardComponent.notifications;
       }
     });
+    this.notifications = DashboardComponent.notifications;
   }
 
 
