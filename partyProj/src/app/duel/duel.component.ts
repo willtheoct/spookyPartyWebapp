@@ -36,7 +36,7 @@ export class DuelComponent implements OnInit {
   thisPlayer: PartyGoer = null;
 
   selectRef(r: PartyGoer) {
-    this.http.put(AppComponent.hostServer + "duel", {
+    this.http.put(AppComponent.hostServer + "duelChallenge", {
       src: AppComponent.userId,
       target: this.target.id,
       referee: r.id,
@@ -44,7 +44,7 @@ export class DuelComponent implements OnInit {
       targetWager: this.targetInventoryWager
     })
       .subscribe(() => {
-        this.http.get(AppComponent.hostServer + "duel?playerId=" + AppComponent.userId).subscribe(x => console.log(x));
+        this.http.get(AppComponent.hostServer + "duelChallenge?playerId=" + AppComponent.userId).subscribe(x => console.log(x));
         this.router.navigate(['/']);
       },
         e => this.router.navigate(['/']));

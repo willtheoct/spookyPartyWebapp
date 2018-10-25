@@ -14,6 +14,9 @@ import { PlayerlistComponent } from './playerlist/playerlist.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { StatsComponent } from './stats/stats.component';
 import { TradeComponent } from './trade/trade.component';
+import { AchievementsComponent } from './achievements/achievements.component';
+import { ContestComponent } from './contest/contest.component';
+import { UnlocksComponent } from './unlocks/unlocks.component';
 
 
 @NgModule({
@@ -24,7 +27,10 @@ import { TradeComponent } from './trade/trade.component';
     PlayerlistComponent,
     InventoryComponent,
     StatsComponent,
-    TradeComponent
+    TradeComponent,
+    AchievementsComponent,
+    ContestComponent,
+    UnlocksComponent
   ],
   imports: [
     BrowserModule,

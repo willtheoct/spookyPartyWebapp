@@ -20,9 +20,11 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit() {
     interval(5000).subscribe(() => {
+      if (AppComponent.loggedIn) {
 
-      this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId).subscribe(x => this.notifications = x);
-      console.log(this.notifications);
+        this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => this.notifications = x);
+        console.log(this.notifications);
+      }
     });
   }
 

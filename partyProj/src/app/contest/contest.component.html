@@ -1,0 +1,5 @@
+<div *ngFor="let player of players">
+  <div (click)="voteUp(player)">▲</div>
+  {{player.characterName}}
+  <div (click)="voteDown(player)">▲</div>
+</div>

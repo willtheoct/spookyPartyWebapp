@@ -5,6 +5,7 @@ import { playerIds, PartyGoer } from '../models/partyGoer.model';
 import { currency, currencies } from '../models/currency.model';
 import { HttpClient } from '@angular/common/http';
 import { interval } from 'rxjs/observable/interval';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,7 @@ export class
   mockplayers() {
     {
       let p = new PartyGoer();
-      p.id = playerIds.adventurer;
+      p.id = playerIds.weaver;
       p.inventory[currencies.bronze] = 1;
       p.inventory[currencies.silver] = 1;
       p.inventory[currencies.starbucks] = 1;
@@ -29,7 +30,7 @@ export class
     }
     {
       let p = new PartyGoer();
-      p.id = playerIds.wizard;
+      p.id = playerIds.wallace;
       p.characterName = "will the wizard";
       p.inventory[currencies.rupees] = 1;
       p.inventory[currencies.ironOre] = 100;
@@ -50,7 +51,7 @@ export class
     }
     {
       let p = new PartyGoer();
-      p.id = playerIds.overlord;
+      p.id = playerIds.whethers;
       p.characterName = "Ivan the Overlord"
       PartyGoer.onlinePlayers.push(p);
     }
@@ -58,36 +59,43 @@ export class
 
   ngOnInit(): void {
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
-      .subscribe(x => PartyGoer.onlinePlayers = x);
+      .subscribe(x => {
+        PartyGoer.onlinePlayers = x;
+        let ids = localStorage.getItem("loginId");
+        let id = Number.parseInt(ids);
+        if (!isNaN(id)) {
+          this.login(id);
+        }
+      });
     interval(10000).subscribe(() =>
       this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
         .subscribe(x => PartyGoer.onlinePlayers = x));
-    AppComponent.userId = playerIds[localStorage.getItem("loginId")];
-    console.log("logged in as " + AppComponent.userId);
   }
-  title = 'app';
   loggedIn = localStorage.getItem("LoggedIn") ? true : false;
+  static loggedIn = localStorage.getItem("LoggedIn") ? true : false;
   passphrase = "";
   loginFailed = 0;
   static username = "";
-  static userId: playerIds;
-  static hostServer = "http://localhost:8220/"
+  static userId: playerIds = 0;
+  static hostServer = "http://localhost:8220/";
 
 
   tryLogin() {
-    switch (this.passphrase) {
-      case "urman": this.login(playerIds.adventurer); break;
-      case "yuan": this.login(playerIds.overlord); break;
-      case "qq": this.login(playerIds.wizard); break;
-      default: this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
+    if (PartyGoer.onlinePlayers.some(x => x.passPhrase === this.passphrase)) {
+      this.login(PartyGoer.onlinePlayers.find(x => x.passPhrase === this.passphrase).id);
+    }
+    else {
+      this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
   }
 
-  login(id: playerIds) {
+  login(id: number) {
+    console.log("logging in with ID " + id);
     AppComponent.userId = id;
     AppComponent.username = playerIds[id];
     localStorage.setItem("LoggedIn", "true");
-    localStorage.setItem("loginId", playerIds[id]);
+    localStorage.setItem("loginId", id.toString());
     this.loggedIn = true;
+    AppComponent.loggedIn = true;
   }
 }

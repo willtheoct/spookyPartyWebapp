@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { AppComponent } from '../app.component';
-import { playerIds } from '../../models/partyGoer.model';
+import { playerIds, PartyGoer } from '../../models/partyGoer.model';
 
 @Component({
   selector: 'app-stats',
@@ -15,6 +15,7 @@ export class StatsComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
+    this.name = PartyGoer.onlinePlayers[AppComponent.userId].characterName;
   }
 
   level = 12;

@@ -50,7 +50,24 @@ namespace spookyWebServer
         public int level;
         [DataMember]
         public int[] inventory;
+        [DataMember]
+        public string passPhrase;
 
 
+    }
+
+    enum currencyEnum
+    {
+        bronze,
+        silver,
+        gold,
+        platinum,
+        trinkets,
+        crystals,
+        starbucks,
+        fudgeTokens,
+        keys,
+        ironOre,
+        rupees
     }
 }
