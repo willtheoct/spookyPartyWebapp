@@ -24,7 +24,11 @@ export class InventoryComponent implements OnInit {
       this.player = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
     }
     console.log("showing " + this.player.characterName + "'s inventory with " + this.player.inventory.length + "currencies");
-    this.items = Object.values(currencies).slice(Object.keys(currencies).length / 2).map(x => new currency(x, this.player.inventory[x]));
+    for (let i = 0; i < (Object.keys(currencies).length / 2); i++) {
+      const element = currencies[i];
+      this.items[i] = new currency(i, this.player.inventory[i]);
+    }
+    console.log(this.items);
   }
 
   items: currency[] = [];

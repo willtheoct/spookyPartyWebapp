@@ -23,8 +23,11 @@ export class DashboardComponent implements OnInit {
     interval(5000).subscribe(() => {
       if (AppComponent.loggedIn) {
 
-        this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => DashboardComponent.notifications = x);
-        this.notifications = DashboardComponent.notifications;
+        this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => {
+          console.log(x);
+          DashboardComponent.notifications = x;
+          this.notifications = x;
+        });
       }
     });
     this.notifications = DashboardComponent.notifications;
@@ -40,6 +43,9 @@ export class DashboardComponent implements OnInit {
   }
   craft() {
     this.router.navigate(["/inventory"]);
+  }
+  enterCode() {
+    this.router.navigate(["/enterCode"]);
   }
 }
 

@@ -18,7 +18,7 @@ export class UnlocksComponent implements OnInit {
   unlockResultWait = 0;
   unlockCode = "";
   tryUnlock() {
-    this.http.get<string>(AppComponent.hostServer + "/unlock?userId=" + AppComponent.userId + "?code=" + this.unlockCode).subscribe(x => {
+    this.http.get<string>(AppComponent.hostServer + "unlock?userId=" + AppComponent.userId + "&code=" + this.unlockCode).subscribe(x => {
       this.unlockResultWait++;
       this.unlockResult = x;
       timer(5000).subscribe(() => {

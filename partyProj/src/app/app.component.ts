@@ -86,7 +86,7 @@ export class
       this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
     else {
-      this.http.get(AppComponent.hostServer + "login?userId=" + id);
+      this.http.get(AppComponent.hostServer + "login?userId=" + id).subscribe(() => this.login(id));
     }
   }
 
