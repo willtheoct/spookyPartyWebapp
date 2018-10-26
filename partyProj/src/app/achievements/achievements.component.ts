@@ -13,11 +13,29 @@ export class AchievementsComponent implements OnInit {
 
   ngOnInit() {
     this.http.get<number[]>(AppComponent.hostServer + "achievements?user=" + AppComponent.userId).
-      subscribe(unlockedAchievementIds => this.achievements = this.allAchievements.filter(a => unlockedAchievementIds.some(x => x === this.allAchievements.indexOf(a))));
+      subscribe(unlockedAchievements => {
+        this.achievements = unlockedAchievements;
+
+      });
   }
   achievements = [];
-  allAchievements = [
-    { name: "come on ", description: "this means you stepped it up or flew fast like a falcon" },
-    { name: "", description: "" }
-  ];
+  has(a: number) {
+    return true;
+    //return this.achievements.some(x => x === a);
+  }
+
+  sneakthief = 1;
+  showoff = 2;
+  monsterhunter = 3;
+  breaksomething = 4;
+  devourer = 5;
+  galois = 6;
+  duelist = 7;
+  champion = 8;
+  grinding = 9;
+  adventurer = 10;
+  partyoffive = 11;
+  hairywizard = 12;
+  aimbot = 13;
+
 }

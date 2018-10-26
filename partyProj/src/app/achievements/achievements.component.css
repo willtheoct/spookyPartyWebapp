@@ -1,0 +1,17 @@
+div > div{
+    border-radius: 10px;
+    width: 300px;
+    display: block;
+    padding: 0.4em;
+    margin: 0.25em;
+    animation: 120ms splooshIn;
+}
+.unlocked > div{
+    border: 5px solid lightskyblue;
+    background: #ffffcc;
+    
+}
+.locked > div{
+    border: 5px solid lightgray;
+    background: #999999;
+}

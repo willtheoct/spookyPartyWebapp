@@ -1,4 +1,107 @@
-<div *ngFor="let achievement of achievements" style="border: 1em solid">
-  {{achievement.name}} <br>
-  {{achievement.description}} <br>
+<div class="unlocked flex-column">
+
+  <div *ngIf="has(sneakthief)">
+    <h5>Sneak Thief</h5>
+    Steal the wizard's wand.
+  </div>
+  <div *ngIf="has(showoff)">
+    <h5>Show Off</h5>
+    Do 100 push-ups.
+  </div>
+  <div *ngIf="has(monsterhunter)">
+    <h5>Monster Hunter</h5>
+    Slay 5 monsters.
+  </div>
+  <div *ngIf="has(galois)">
+    <h5>Galois</h5>
+    Duel 5 times.
+  </div>
+  <div *ngIf="has(duelist)">
+    <h5>Duelist</h5>
+    Duel 10 times.
+  </div>
+  <div *ngIf="has(champion)">
+    <h5>Champion</h5>
+    Duel 15 times.
+  </div>
+  <div *ngIf="has(aimbot)">
+    <h5>Hip replacement surgery</h5>
+    Pin the coccyx within an inch of the target.
+  </div>
+  <div *ngIf="has(grinding)">
+    <h5>Every Game Has Grinding</h5>
+    Literally grind on someone.
+  </div>
+  <div *ngIf="has(adventurer)">
+    <h5>Adventurer</h5>
+    Slay 5 monsters.
+  </div>
+  <div *ngIf="has(partyoffive)">
+    <h5>You're a hairy wizard</h5>
+    Complete a staff.
+  </div>
+  <div *ngIf="has(breaksomething)">
+    <h5>Break Something</h5>
+    It was bound to happen.
+  </div>
+  <div *ngIf="has(partyoffive)">
+    <h5>The adventure begins!</h5>
+    Assemble a party of 5.
+  </div>
+  <div *ngIf="has(devourer)">
+    <h5>Devourer</h5>
+    Eat all the pizza.
+  </div>
+</div>
+
+<div class="locked flex-column">
+  <div *ngIf="!has(adventurer)">
+    <h5>Locked</h5>
+    Slay 3 monsters.
+  </div>
+  <div *ngIf="!has(monsterhunter)">
+    <h5>Locked</h5>
+    Slay 5 monsters.
+  </div>
+  <div *ngIf="!has(galois)">
+    <h5>Locked</h5>
+    Duel 5 times.
+  </div>
+  <div *ngIf="!has(duelist)">
+    <h5>Locked</h5>
+    Duel 10 times.
+  </div>
+  <div *ngIf="!has(champion)">
+    <h5>Locked</h5>
+    Duel 15 times.
+  </div>
+  <div *ngIf="!has(showoff)">
+    <h5>Locked</h5>
+    Do 100 push-ups.
+  </div>
+  <div *ngIf="!has(aimbot)">
+    <h5>Locked</h5>
+    Pin the coccyx within an inch of the target.
+  </div>
+  <div *ngIf="!has(sneakthief)">
+    <h5>Locked</h5>
+    Steal the wizard's wand.
+  </div>
+  <div *ngIf="!has(partyoffive)">
+    <h5>Locked</h5>
+    Complete a staff.
+  </div>
+  <div *ngIf="!has(grinding)">
+    <h5>Secret Achievement</h5>???
+  </div>
+  <div *ngIf="!has(partyoffive)">
+    <h5>Locked Group Achievement</h5>
+    Assemble a party of 5.
+  </div>
+  <div *ngIf="!has(devourer)">
+    <h5>Secret Group Achievement</h5>???
+  </div>
+  <div *ngIf="!has(breaksomething)">
+    <h5>Secret Group Achievement</h5>???
+  </div>
 </div>

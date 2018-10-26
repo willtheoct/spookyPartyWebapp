@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace spookyWebServer
 {
     [DataContract]
-    public struct duel
+    public class duel
     {
         [DataMember]
         public int src;
@@ -22,7 +22,7 @@ namespace spookyWebServer
         public int referee;
     }
     [DataContract]
-    public struct currency
+    public class currency
     {
         [DataMember]
         public int Type;
@@ -30,17 +30,17 @@ namespace spookyWebServer
         public int count;
     }
     [DataContract]
-    public struct currencies
+    public class currencies
     {
     }
     [DataContract]
-    public struct notification
+    public class notification
     {
         [DataMember]
         public string text;
     }
     [DataContract]
-    public struct PartyGoer
+    public class PartyGoer
     {
         [DataMember]
         public string characterName;
@@ -53,7 +53,11 @@ namespace spookyWebServer
         [DataMember]
         public string passPhrase;
         [DataMember]
-        public notification[] notifications;
+        public List<notification> notifications;
+        [DataMember]
+        public List<string> achievements=new List<string>();
+        [DataMember]
+        public int duelCount=0;
 
 
     }

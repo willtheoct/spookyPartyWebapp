@@ -75,7 +75,7 @@ namespace spookyWebServer
                 context.Response.Headers.Add("Cache-Control: max-age=0");
                 var segments = request.Url.Segments.ToList();
 
-                Console.Write(request.RawUrl);
+                Console.WriteLine(request.RawUrl);
 
                 if (request.HttpMethod == "OPTIONS")
                 {
@@ -140,7 +140,8 @@ namespace spookyWebServer
         private static void unlock(HttpListenerContext context)
         {
             var player = _players[int.Parse( context.Request.QueryString["userId"])];
-            switch (context.Request.QueryString["code"])
+            var code = context.Request.QueryString["code"];
+            switch (code)
             {
                 case "sylvester":
                     json.write(context.Response.OutputStream, "You looted sylvester the slime for 4 gold!");
@@ -173,6 +174,9 @@ namespace spookyWebServer
                 case "protein":
                     json.write(context.Response.OutputStream, "Wow, you did 100 pushups!"); //TODO reward
                     break;
+                case "thief":
+                    player.achievements.Add("Sneak Thief"); break;
+
                 default:
                     json.write(context.Response.OutputStream, "You didn't unlock anything...");
                     break;
@@ -233,19 +237,22 @@ namespace spookyWebServer
                     activeDuelChallenges.Add(challenge);
                     foreach (var notificationList in _notifications)
                     {
-                        if (notificationList.Key != challenge.target)
+                        var target = _players[challenge.target];
+                        var challenger= _players[challenge.src];
+                        target.duelCount++;
+                        challenger.duelCount++;
+                        foreach(var p in _players)
                         {
-                            var notification = new notification();
-                            var srcName = _players[challenge.src].characterName;
-                            var dstName = _players[challenge.target].characterName;
-                            notification.text = srcName + " has challenged " + dstName + " to a duel!";
-                            _notifications[notificationList.Key].Add(notification);
-                        }
-                        else
-                        {
-                            var note = new notification();
-                            note.text = _players[challenge.src].characterName + " has challenged you to a duel!";
-                            _notifications[notificationList.Key].Add(note);
+                            var n = new notification();
+                            if (p == target)
+                            {
+                                n.text = challenger.characterName + " has challenged you to a duel!";
+                                p.notifications.Add(n);
+                            }
+                            else
+                            {
+                                n.text = challenger.characterName + " has challenged " + target.characterName + " to a duel!";
+                            }
                         }
                     }
                     context.Response.Close();

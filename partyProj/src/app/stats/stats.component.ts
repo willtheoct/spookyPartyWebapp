@@ -16,10 +16,11 @@ export class StatsComponent implements OnInit {
 
   ngOnInit() {
     this.name = PartyGoer.onlinePlayers[AppComponent.userId].characterName;
+    this.level = PartyGoer.onlinePlayers[AppComponent.userId].level;
   }
 
-  level = 12;
-  name = "Will";
+  level = 1;
+  name = "";
 
 
 }
