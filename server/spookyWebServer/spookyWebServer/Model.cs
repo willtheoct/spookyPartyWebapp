@@ -20,6 +20,10 @@ namespace spookyWebServer
         public currency[] targetWager;
         [DataMember]
         public int referee;
+        [DataMember]
+        public int winner;
+        [DataMember]
+        public string description;
     }
     [DataContract]
     public class currency
@@ -38,6 +42,8 @@ namespace spookyWebServer
     {
         [DataMember]
         public string text;
+        [DataMember]
+        public string link;
     }
     [DataContract]
     public class PartyGoer
@@ -53,27 +59,46 @@ namespace spookyWebServer
         [DataMember]
         public string passPhrase;
         [DataMember]
-        public List<notification> notifications;
+        public List<notification> notifications=new List<notification>();
         [DataMember]
-        public List<string> achievements=new List<string>();
+        public List<int> achievements=new List<int>();
         [DataMember]
-        public int duelCount=0;
+        public int duelCount = 0;
+        [DataMember]
+        public int slewnMonsters = 0;
 
 
     }
 
     enum currencyEnum
     {
+        gold,
+        crystals,
+        ironOre,/*
         bronze,
         silver,
-        gold,
         platinum,
         trinkets,
-        crystals,
         starbucks,
         fudgeTokens,
         keys,
-        ironOre,
-        rupees
+        rupees*/
+    }
+
+    enum achievementsEnum
+    {
+        sneakthief = 1,
+        showoff = 2,
+        monsterhunter = 3,
+        breaksomething = 4,
+        devourer = 5,
+        galois = 6,
+        duelist = 7,
+        champion = 8,
+        grinding = 9,
+        adventurer = 10,
+        partyoffive = 11,
+        hairywizard = 12,
+        aimbot = 13
     }
 }

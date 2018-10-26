@@ -41,7 +41,8 @@ export class DuelComponent implements OnInit {
       target: this.target.id,
       referee: r.id,
       srcWager: this.myInventoryWager,
-      targetWager: this.targetInventoryWager
+      targetWager: this.targetInventoryWager,
+      description: this.description
     })
       .subscribe(() => {
         this.http.get(AppComponent.hostServer + "duelChallenge?playerId=" + AppComponent.userId).subscribe(x => console.log(x));

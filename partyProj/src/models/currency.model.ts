@@ -1,15 +1,15 @@
 export enum currencies {
+    gold,
+    crystals,
+    ironOre,/*
     bronze,
     silver,
-    gold,
     platinum,
     trinkets,
-    crystals,
     starbucks,
     fudgeTokens,
     keys,
-    ironOre,
-    rupees
+    rupees*/
 }
 
 export class currency {

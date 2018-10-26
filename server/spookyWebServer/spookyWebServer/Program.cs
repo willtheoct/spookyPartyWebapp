@@ -26,6 +26,8 @@ namespace spookyWebServer
 #endif
         static int Main(string[] args)
         {
+
+            var backupThread = new Thread(backup);
             /*
             var playermock = new PartyGoer();
             playermock.id = 2;
@@ -34,6 +36,9 @@ namespace spookyWebServer
             playermock.inventory = new int[] { 10, 42, 3, 4, 5, 2, 0, 0, 0, 0 };
             _players[0]= playermock;
             
+            var writeFile = File.Open("players.json", FileMode.OpenOrCreate);
+            json.write(writeFile, _players);
+            writeFile.Close();
             */
 
 #if serveStaticPages
@@ -47,13 +52,12 @@ namespace spookyWebServer
             }
 #endif
 
-#region setup
+            #region setup
             var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
-            //json.write(playerDb, _players);
             _players = json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { };
             playerDb.Close();
 
-            var duelDb = File.Open("ActiveDuels.json", FileMode.OpenOrCreate);
+            var duelDb = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
             activeDuelChallenges = (json.read<duel[]>(duelDb) ?? new duel[] { }).ToList();
             duelDb.Close();
 
@@ -100,7 +104,7 @@ namespace spookyWebServer
                     case "onlinePlayers":
                         onlinePlayers(context);
                         break;
-                    case "unlocks":
+                    case "unlock":
                         unlock(context);
                         break;
                     case "login":
@@ -128,6 +132,23 @@ namespace spookyWebServer
             }
         }
 
+        static void backup()
+        {
+            var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
+            json.write(onlinePlayerFile, _onlinePlayers);
+            onlinePlayerFile.Close();
+
+            var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
+            _players = json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { };
+            playerDb.Close();
+
+            var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
+            json.write(db, activeDuelChallenges);
+            db.Close();
+
+            Thread.Sleep(5000);
+        }
+
         private static void login(HttpListenerContext context)
         {
             var id =int.Parse( context.Request.QueryString["userId"]);
@@ -139,7 +160,7 @@ namespace spookyWebServer
 
         private static void unlock(HttpListenerContext context)
         {
-            var player = _players[int.Parse( context.Request.QueryString["userId"])];
+            var player = _onlinePlayers[int.Parse( context.Request.QueryString["userId"])];
             var code = context.Request.QueryString["code"];
             switch (code)
             {
@@ -164,18 +185,15 @@ namespace spookyWebServer
                     player.inventory[(int)currencyEnum.gold] += 4;
                     break;
                 case "goldie":
-                    json.write(context.Response.OutputStream, "You looted golden slime for 10 gold!");
+                    json.write(context.Response.OutputStream, "You looted the golden slime for 10 gold!");
                     player.inventory[(int)currencyEnum.gold] += 10;
                     break;
                 case "sonata":
                     json.write(context.Response.OutputStream, "You looted sonata the slime for 4 gold!");
                     player.inventory[(int)currencyEnum.gold] += 4;
                     break;
-                case "protein":
-                    json.write(context.Response.OutputStream, "Wow, you did 100 pushups!"); //TODO reward
-                    break;
                 case "thief":
-                    player.achievements.Add("Sneak Thief"); break;
+                    player.achievements.Add((int)achievementsEnum.sneakthief); break;
 
                 default:
                     json.write(context.Response.OutputStream, "You didn't unlock anything...");
@@ -194,7 +212,7 @@ namespace spookyWebServer
             switch (context.Request.HttpMethod)
             {
                 case "GET":
-                    json.write(context.Response.OutputStream, _players);
+                    json.write(context.Response.OutputStream, _onlinePlayers);
                     break;
             }
         }
@@ -214,7 +232,7 @@ namespace spookyWebServer
             {
                 case "GET":
                     var user = int.Parse(context.Request.QueryString[0]);
-                    json.write(context.Response.OutputStream, _players[user].notifications);
+                    json.write(context.Response.OutputStream, _onlinePlayers[user].notifications);
                     break;
             }
         }
@@ -233,38 +251,78 @@ namespace spookyWebServer
             switch (context.Request.HttpMethod)
             {
                 case "PUT":
-                    var challenge = json.read<duel>(context.Request.InputStream);
-                    activeDuelChallenges.Add(challenge);
-                    foreach (var notificationList in _notifications)
                     {
+
+                        var challenge = json.read<duel>(context.Request.InputStream);
+                        activeDuelChallenges.Add(challenge);
+                        foreach (var notificationList in _notifications)
+                        {
+                            var target = _onlinePlayers[challenge.target];
+                            var challenger = _onlinePlayers[challenge.src];
+                            foreach (var p in _onlinePlayers)
+                            {
+                                var n = new notification();
+                                if (p == target)
+                                {
+                                    n.text = challenger.characterName + " has challenged you to a duel!";
+                                    n.link = "duel";
+                                    p.notifications.Add(n);
+                                }
+                                else
+                                {
+                                    n.text = challenger.characterName + " has challenged " + target.characterName + " to a duel!";
+                                    n.link = "duel";
+                                }
+                            }
+                        }
+                        context.Response.Close();
+                        var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
+                        json.write(db, activeDuelChallenges);
+                        db.Close();
+                    }
+                    break;
+                case "DELETE":
+                    //duel complete
+                    {
+                        var challenge = json.read<duel>(context.Request.InputStream);
                         var target = _players[challenge.target];
-                        var challenger= _players[challenge.src];
+                        var challenger = _players[challenge.src];
                         target.duelCount++;
                         challenger.duelCount++;
-                        foreach(var p in _players)
+                        foreach (var player in new PartyGoer[] { target, challenger })
                         {
-                            var n = new notification();
-                            if (p == target)
+                            if (player.duelCount == 5) player.achievements.Add((int)achievementsEnum.galois);
+                            if (player.duelCount == 10) player.achievements.Add((int)achievementsEnum.duelist);
+                            if (player.duelCount == 15) player.achievements.Add((int)achievementsEnum.champion);
+                        }
+
+                        if (challenge.src == challenge.winner)
+                        {
+                            challenger.inventory = challenger.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x + y).ToArray();
+                            target.inventory = target.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x - y).ToArray();
+                            foreach (var player in _onlinePlayers)
                             {
-                                n.text = challenger.characterName + " has challenged you to a duel!";
-                                p.notifications.Add(n);
+                                var n = new notification();
+                                n.text = challenger.characterName + " has defeated " + target.characterName + " in a duel!";
+                                player.notifications.Add(n);
                             }
-                            else
+                        }
+                        else
+                        {
+                            challenger.inventory = challenger.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x - y).ToArray();
+                            target.inventory = target.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x + y).ToArray();
+                            foreach(var player in _onlinePlayers)
                             {
-                                n.text = challenger.characterName + " has challenged " + target.characterName + " to a duel!";
+                                var n = new notification();
+                                n.text = target.characterName + " has defeated " + challenger.characterName + " in a duel!";
+                                player.notifications.Add(n);
                             }
                         }
                     }
-                    context.Response.Close();
-                    var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
-                    json.write(db, activeDuelChallenges);
-                    db.Close();
-                    break;
-                case "DELETE":
                     break;
                 case "GET":
                     var playerId = int.Parse(context.Request.QueryString["playerId"]);
-                    json.write(context.Response.OutputStream, activeDuelChallenges.Where(x=>x.target==playerId));
+                    json.write(context.Response.OutputStream, activeDuelChallenges.Where(x => x.target == playerId));
                     break;
             }
         }

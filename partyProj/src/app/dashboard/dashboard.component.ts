@@ -5,6 +5,7 @@ import { Observable } from 'rxjs/Observable';
 import { interval } from 'rxjs/observable/interval';
 import { HttpClient } from '@angular/common/http';
 import { AppComponent } from '../app.component';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,8 +23,8 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     interval(5000).subscribe(() => {
       if (AppComponent.loggedIn) {
-
         this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => {
+          if (isNullOrUndefined(x)) x = [];
           console.log(x);
           DashboardComponent.notifications = x;
           this.notifications = x;
