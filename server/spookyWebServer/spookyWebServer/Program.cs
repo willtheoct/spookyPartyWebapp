@@ -18,8 +18,9 @@ namespace spookyWebServer
         static HttpListener http = new HttpListener();
         static List<duel> activeDuelChallenges = new List<duel>();
         static Dictionary<int, List<notification>> _notifications = new Dictionary<int, List<notification>>();
-        static PartyGoer[] _players = new PartyGoer[] { };
-        static PartyGoer[] _onlinePlayers = new PartyGoer[] { };
+        static List<PartyGoer>_players = new List< PartyGoer>() { };
+        static List<PartyGoer> _onlinePlayers = new List<PartyGoer>() { };
+        static bool fileLock = false;
 
 #if serveStaticPages
         static Dictionary<string, byte[]> serverPages = new Dictionary<string, byte[]>();
@@ -27,15 +28,14 @@ namespace spookyWebServer
         static int Main(string[] args)
         {
 
-            var backupThread = new Thread(backup);
             /*
             var playermock = new PartyGoer();
-            playermock.id = 2;
+            playermock.id = 0;
             playermock.level = 4;
             playermock.characterName = "will";
-            playermock.inventory = new int[] { 10, 42, 3, 4, 5, 2, 0, 0, 0, 0 };
-            _players[0]= playermock;
-            
+            playermock.inventory = new int[] { 0, 0, 0 };
+            _players.Add(playermock);
+
             var writeFile = File.Open("players.json", FileMode.OpenOrCreate);
             json.write(writeFile, _players);
             writeFile.Close();
@@ -53,8 +53,9 @@ namespace spookyWebServer
 #endif
 
             #region setup
+            fileLock = true;
             var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
-            _players = json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { };
+            _players = json.read<List<PartyGoer>>(playerDb) ?? new List<PartyGoer>() { };
             playerDb.Close();
 
             var duelDb = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
@@ -62,11 +63,18 @@ namespace spookyWebServer
             duelDb.Close();
 
             var onlinePlayerFile = File.Open("onlinePlayers.json",FileMode.OpenOrCreate);
-            _onlinePlayers = json.read<PartyGoer[]>(onlinePlayerFile);
+            _onlinePlayers = json.read< List<PartyGoer>> (onlinePlayerFile);
             onlinePlayerFile.Close();
+            fileLock = false;
 
-            Console.WriteLine("Loaded " + _players.Length + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
-#endregion
+            Console.WriteLine("Loaded " + _players.Count + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
+            #endregion
+
+
+            var backupThread = new Thread(backup);
+            var passiveIncomeThread = new Thread(passiveIncome);
+            backupThread.Start();
+            passiveIncomeThread.Start();
 
             http.Prefixes.Add("http://localhost:8220/");
             http.Start();
@@ -138,9 +146,9 @@ namespace spookyWebServer
             json.write(onlinePlayerFile, _onlinePlayers);
             onlinePlayerFile.Close();
 
-            var playerDb = File.Open("players.json", FileMode.OpenOrCreate);
-            _players = json.read<PartyGoer[]>(playerDb) ?? new PartyGoer[] { };
-            playerDb.Close();
+            var playerFile = File.Open("players.json", FileMode.OpenOrCreate);
+            json.write(playerFile, _players);
+            playerFile.Close();
 
             var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
             json.write(db, activeDuelChallenges);
@@ -149,13 +157,35 @@ namespace spookyWebServer
             Thread.Sleep(5000);
         }
 
+        static void passiveIncome()
+        {
+            while (!fileLock)
+            {
+                foreach (var player in _onlinePlayers)
+                {
+                    player.inventory[(int)currencyEnum.gold] += (int)(player.level * player.level) / 2 + 1;
+                    Console.Write("delivered passive income to " + _onlinePlayers.Count + " players.");
+                    //Thread.Sleep(15 * 60 * 1000);
+                }
+                Thread.Sleep(1000);
+            }
+        }
+
+        #region web methods
         private static void login(HttpListenerContext context)
         {
             var id =int.Parse( context.Request.QueryString["userId"]);
-            _onlinePlayers[id] = _players[id];
-            var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
-            json.write(onlinePlayerFile, _onlinePlayers);
-            onlinePlayerFile.Close();
+            if (!_onlinePlayers.Any(x => x.id == id))
+            {
+                _onlinePlayers.Add(_players[id]);
+
+                while (fileLock) ;
+                fileLock = true;
+                var f=File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
+                json.write(f, _onlinePlayers);
+                f.Close();
+                fileLock = false;
+            }
         }
 
         private static void unlock(HttpListenerContext context)
@@ -212,7 +242,7 @@ namespace spookyWebServer
             switch (context.Request.HttpMethod)
             {
                 case "GET":
-                    json.write(context.Response.OutputStream, _onlinePlayers);
+                    json.write(context.Response.OutputStream, _players);
                     break;
             }
         }
@@ -276,9 +306,6 @@ namespace spookyWebServer
                             }
                         }
                         context.Response.Close();
-                        var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
-                        json.write(db, activeDuelChallenges);
-                        db.Close();
                     }
                     break;
                 case "DELETE":
@@ -345,3 +372,4 @@ namespace spookyWebServer
 
     }
 }
+#endregion

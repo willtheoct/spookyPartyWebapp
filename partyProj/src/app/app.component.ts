@@ -18,45 +18,6 @@ export class
 
   }
 
-  mockplayers() {
-    {
-      let p = new PartyGoer();
-      p.id = playerIds.weaver;
-      p.inventory[currencies.bronze] = 1;
-      p.inventory[currencies.silver] = 1;
-      p.inventory[currencies.starbucks] = 1;
-      p.characterName = "Alex the Adventurer"
-      PartyGoer.onlinePlayers.push(p);
-    }
-    {
-      let p = new PartyGoer();
-      p.id = playerIds.wallace;
-      p.characterName = "will the wizard";
-      p.inventory[currencies.rupees] = 1;
-      p.inventory[currencies.ironOre] = 100;
-      p.inventory[currencies.gold] = 3;
-      PartyGoer.onlinePlayers.push(p);
-    }
-    {
-      let p = new PartyGoer();
-      p.id = playerIds.hargar;
-      p.characterName = "hargar the harbinger"
-      PartyGoer.onlinePlayers.push(p);
-    }
-    {
-      let p = new PartyGoer();
-      p.id = playerIds.asdf;
-      p.characterName = "asdf"
-      PartyGoer.onlinePlayers.push(p);
-    }
-    {
-      let p = new PartyGoer();
-      p.id = playerIds.whethers;
-      p.characterName = "Ivan the Overlord"
-      PartyGoer.onlinePlayers.push(p);
-    }
-  }
-
   ngOnInit(): void {
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
       .subscribe(x => {
