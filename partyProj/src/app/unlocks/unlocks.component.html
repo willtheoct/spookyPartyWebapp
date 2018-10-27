@@ -1,9 +1,12 @@
-<div *ngIf="!unlockResultWait">
-  <input type="text" [(ngModel)]="unlockCode">
-  <button type="button" class="btn btn-primary" (click)="tryUnlock()">
-    Abracadoozle
-  </button>
-</div>
-<div *ngIf="unlockResultWait">
-  {{unlockResult}}
+<div class="flex-column">
+
+  <div *ngIf="!unlockResultWait" class="flex-column">
+    <input type="text" [(ngModel)]="unlockCode" style="margin: 1em">
+    <button type="button" class="btn btn-primary" (click)="tryUnlock()">
+      Abracadoozle
+    </button>
+  </div>
+  <div *ngIf="unlockResultWait">
+    {{unlockResult}}
+  </div>
 </div>

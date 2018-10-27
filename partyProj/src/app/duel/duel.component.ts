@@ -7,6 +7,7 @@ import { currency, currencies } from '../../models/currency.model';
 import { interval } from 'rxjs/observable/interval';
 import { Router } from '@angular/router';
 import { DashboardComponent } from '../dashboard/dashboard.component';
+import { duel } from '../../models/duel.model';
 
 @Component({
   selector: 'app-duel',
@@ -15,6 +16,9 @@ import { DashboardComponent } from '../dashboard/dashboard.component';
 })
 export class DuelComponent implements OnInit {
   ngOnInit(): void {
+
+    this.http.get<duel[]>("duels?playerId=" + AppComponent.userId).subscribe(x => this.availableDuels = x);
+
     this.availableDuelists = PartyGoer.onlinePlayers.filter(x => x.id !== AppComponent.userId);
     this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
 
@@ -52,7 +56,8 @@ export class DuelComponent implements OnInit {
   }
   selectTarget(t: PartyGoer) {
     this.target = t;
-    this.availableRefs = this.availableDuelists.filter(x => x.id !== t.id);
+    this.availableRefs = this.availableDuelists.filter(x => x.id !== t.id && x.id !== this.thisPlayer.id);
+    console.log(this.availableRefs);
   }
   availableRefs: PartyGoer[];
   availableDuelists: PartyGoer[];
@@ -62,4 +67,12 @@ export class DuelComponent implements OnInit {
   randomPlaceholder = "";
   wagered = false;
 
+  availableDuels: duel[] = [];
+  selectedDuel: duel;
+  playersOf(d: duel) {
+    return PartyGoer.onlinePlayers.filter(x => x.id == d.src || x.id == d.target);
+  }
+  decideDuel(winner: PartyGoer) {
+    this.http.delete(AppComponent.hostServer + "duel?winner=" + winner.id);
+  }
 }

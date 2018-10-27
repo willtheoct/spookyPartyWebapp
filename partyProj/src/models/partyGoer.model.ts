@@ -14,12 +14,11 @@ export enum playerIds {
 export class PartyGoer {
     characterName: string;
     level = 1;
-    id: playerIds;
+    id: number;
     inventory: number[] = Object.values(currencies).slice(Object.entries(currencies).length / 2).map(x => 0);
     passPhrase = "";
     achievements: number[];
 
-    static allPlayers = Object.keys(playerIds).slice(Object.entries(playerIds).length / 2);
-    // static onlinePlayers: PartyGoer[] = [];
+    static allPlayers: PartyGoer[] = [];
     static onlinePlayers: PartyGoer[] = [];
 }

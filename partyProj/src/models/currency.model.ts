@@ -1,7 +1,7 @@
 export enum currencies {
     gold,
     crystals,
-    ironOre,/*
+    dubloon,/*
     bronze,
     silver,
     platinum,

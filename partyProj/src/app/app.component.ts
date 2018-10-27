@@ -6,6 +6,7 @@ import { currency, currencies } from '../models/currency.model';
 import { HttpClient } from '@angular/common/http';
 import { interval } from 'rxjs/observable/interval';
 import { isNullOrUndefined } from 'util';
+import { Observable } from 'rxjs/Observable';
 
 @Component({
   selector: 'app-root',
@@ -21,15 +22,19 @@ export class
   ngOnInit(): void {
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
       .subscribe(x => {
-        PartyGoer.onlinePlayers = x;
+        PartyGoer.allPlayers = x;
         let ids = localStorage.getItem("loginId");
         let id = Number.parseInt(ids);
         if (!isNaN(id)) {
           this.login(id);
         }
       });
+    this.http.get<PartyGoer[]>(AppComponent.hostServer + "onlinePlayers")
+      .subscribe(x => {
+        PartyGoer.onlinePlayers = x;
+      });
     interval(10000).subscribe(() =>
-      this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
+      this.http.get<PartyGoer[]>(AppComponent.hostServer + "onlinePlayers")
         .subscribe(x => PartyGoer.onlinePlayers = x));
   }
   loggedIn = localStorage.getItem("LoggedIn") ? true : false;
@@ -39,22 +44,24 @@ export class
   static username = "";
   static userId: playerIds = 0;
   static hostServer = "http://localhost:8220/";
+  static playerObservers = [];
 
 
   tryLogin() {
-    let id = PartyGoer.onlinePlayers.find(x => x.passPhrase === this.passphrase).id;
-    if (isNullOrUndefined(id)) {
+    console.log(PartyGoer.allPlayers.map(x => x.id));
+    let loginTarget = PartyGoer.allPlayers.find(x => x.passPhrase === this.passphrase);
+    if (isNullOrUndefined(loginTarget)) {
       this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
     else {
-      this.http.get(AppComponent.hostServer + "login?userId=" + id).subscribe(() => this.login(id));
+      this.http.get(AppComponent.hostServer + "login?userId=" + loginTarget.id).subscribe(() => this.login(loginTarget.id));
     }
   }
 
   login(id: number) {
     console.log("logging in with ID " + id);
     AppComponent.userId = id;
-    AppComponent.username = playerIds[id];
+    AppComponent.username = PartyGoer.allPlayers[id].characterName;
     localStorage.setItem("LoggedIn", "true");
     localStorage.setItem("loginId", id.toString());
     this.loggedIn = true;

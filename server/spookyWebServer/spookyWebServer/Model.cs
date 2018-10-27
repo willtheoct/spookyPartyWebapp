@@ -24,6 +24,8 @@ namespace spookyWebServer
         public int winner;
         [DataMember]
         public string description;
+        [DataMember]
+        public string id;
     }
     [DataContract]
     public class currency

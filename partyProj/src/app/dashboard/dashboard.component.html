@@ -1,17 +1,20 @@
 <div style="height: 100%;" class="flex-column">
   <app-stats [playerId]="playerId"></app-stats>
   <div class="flex-column" style="width: 200px; left:50%; right:0;">
-    <button type="button" class="btn btn-primary" (click)="trade()">
+    <button type="button" class="btn btn-success" (click)="trade()">
       Trade 💱
-    </button>
-    <button type="button" class="btn btn-primary" (click)="craft()">
-      Craft 🔨
     </button>
     <button type="button" class="btn btn-danger" (click)="duel()">
       Duel ⚔
     </button>
     <button type="button" class="btn btn-warning" (click)="enterCode()">
       Enter code 🔒
+    </button>
+    <button type="button" class="btn btn-info" (click)="goToAchievements()">
+      Achievements 🏆
+    </button>
+    <button type="button" class="btn btn-primary" (click)="levelUp()" *ngIf="tnl">
+      Level Up ⬆ <span style="font-size: 10px">({{tnl}})</span>
     </button>
   </div>
   <div class="notifications flex-column border align-bottom" *ngIf="notifications.length>0" style="width: 200px">

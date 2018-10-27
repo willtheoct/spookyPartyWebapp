@@ -12,6 +12,7 @@ export class StatsComponent implements OnInit {
 
   @Input()
   playerId: playerIds;
+  thisPlayer: PartyGoer;
 
   constructor(private http: HttpClient) { }
 
@@ -19,9 +20,11 @@ export class StatsComponent implements OnInit {
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "players").subscribe(x => {
       this.name = x[AppComponent.userId].characterName;
       this.level = x[AppComponent.userId].level;
+      this.thisPlayer = x[AppComponent.userId];
     });
     this.name = PartyGoer.onlinePlayers[AppComponent.userId].characterName;
     this.level = PartyGoer.onlinePlayers[AppComponent.userId].level;
+    this.thisPlayer = PartyGoer.onlinePlayers[AppComponent.userId];
   }
 
   level = 1;

@@ -1,18 +1,17 @@
-<div class="border shadow justify-content-around">
+<div class="border shadow">
 
-  <span>
-
+  <div class="flex-column">
     <h1 style="padding: 10px">
       {{name}}
     </h1>
-    <h3>
-      ✎
+    <h3 style="margin-left: 1em ">
+      Level {{level}}
     </h3>
-  </span>
+  </div>
 
-  <h3>
-
-    Level {{level}}
-  </h3>
-
+  <div class="flex-column">
+    {{thisPlayer.inventory[0]}} Gold <br>
+    {{thisPlayer.inventory[1]}} Crystals <br>
+    {{thisPlayer.inventory[2]}} Dubloons <br>
+  </div>
 </div>

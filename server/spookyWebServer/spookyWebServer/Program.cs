@@ -27,12 +27,12 @@ namespace spookyWebServer
 #endif
         static int Main(string[] args)
         {
-
             /*
             var playermock = new PartyGoer();
             playermock.id = 0;
             playermock.level = 4;
             playermock.characterName = "will";
+            playermock.passPhrase = "qq";
             playermock.inventory = new int[] { 0, 0, 0 };
             _players.Add(playermock);
 
@@ -40,7 +40,7 @@ namespace spookyWebServer
             json.write(writeFile, _players);
             writeFile.Close();
             */
-
+            
 #if serveStaticPages
             foreach (var file in Directory.EnumerateFiles("./www/"))
             {
@@ -70,13 +70,16 @@ namespace spookyWebServer
             Console.WriteLine("Loaded " + _players.Count + " players, " + _notifications.Count + " notification lists, and " + activeDuelChallenges.Count + " duels from files.");
             #endregion
 
-
+            
             var backupThread = new Thread(backup);
             var passiveIncomeThread = new Thread(passiveIncome);
             backupThread.Start();
             passiveIncomeThread.Start();
 
             http.Prefixes.Add("http://localhost:8220/");
+            http.Prefixes.Add("http://+:8220/");
+            http.Prefixes.Add("http://magiccrystalball:8220/");
+            http.Prefixes.Add("http://magiccrystalball:8220/players/");
             http.Start();
 
             while (true)
@@ -85,6 +88,8 @@ namespace spookyWebServer
                 var request = context.Request;
                 context.Response.Headers.Add("Access-Control-Allow-Origin: *");
                 context.Response.Headers.Add("Cache-Control: max-age=0");
+                context.Response.Headers.Add("Access-Control-Allow-Methods: PUT, GET, POST, DELETE, OPTIONS");
+                context.Response.Headers.Add("Access-Control-Allow-Headers: Content-Type, origin");
                 var segments = request.Url.Segments.ToList();
 
                 Console.WriteLine(request.RawUrl);
@@ -115,6 +120,9 @@ namespace spookyWebServer
                     case "unlock":
                         unlock(context);
                         break;
+                    case "levelUp":
+                        levelUp(context);
+                        break;
                     case "login":
                         login(context);
                         break;
@@ -140,34 +148,67 @@ namespace spookyWebServer
             }
         }
 
+        private static void levelUp(HttpListenerContext context)
+        {
+            var playerId = int.Parse( context.Request.QueryString["userId"]);
+            var player = _players[playerId];
+            var goldCost = player.level * player.level + 3;
+            if (player.inventory[(int)currencyEnum.crystals] > 0)
+            {
+                player.inventory[(int)currencyEnum.crystals] -= 1;
+                player.level++;
+                var note = new notification();
+                note.text = player.characterName + " is now level " + player.level + "!";
+                _players.ForEach(x => x.notifications.Add(note));
+            }
+            else if(player.inventory[(int)currencyEnum.gold] > goldCost && player.inventory[(int)currencyEnum.ironOre] > 0)
+            {
+                player.inventory[(int)currencyEnum.gold] -= goldCost;
+                player.inventory[(int)currencyEnum.ironOre] -= 1;
+                player.level++;
+                var note = new notification();
+                note.text = player.characterName + " is now level " + player.level + "!";
+                _players.ForEach(x => x.notifications.Add(note));
+            }
+            json.write(context.Response.OutputStream, player);
+        }
+
         static void backup()
         {
-            var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
-            json.write(onlinePlayerFile, _onlinePlayers);
-            onlinePlayerFile.Close();
+            while (true)
+            {
+                while (fileLock) Thread.Sleep(100);
+                fileLock = true;
+                Console.WriteLine("backing up.");
+                var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
+                json.write(onlinePlayerFile, _onlinePlayers);
+                onlinePlayerFile.Close();
 
-            var playerFile = File.Open("players.json", FileMode.OpenOrCreate);
-            json.write(playerFile, _players);
-            playerFile.Close();
+                var playerFile = File.Open("players.json", FileMode.OpenOrCreate);
+                json.write(playerFile, _players.ToArray());
+                Thread.Sleep(1000);
+                playerFile.Close();
+                
+                var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
+                json.write(db, activeDuelChallenges);
+                db.Close();
 
-            var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
-            json.write(db, activeDuelChallenges);
-            db.Close();
-
-            Thread.Sleep(5000);
+                fileLock = false;
+                Thread.Sleep(15000);
+            }
         }
 
         static void passiveIncome()
         {
-            while (!fileLock)
+            while (true)
             {
+                Thread.Sleep(15 * 60 * 1000);
                 foreach (var player in _onlinePlayers)
                 {
-                    player.inventory[(int)currencyEnum.gold] += (int)(player.level * player.level) / 2 + 1;
-                    Console.Write("delivered passive income to " + _onlinePlayers.Count + " players.");
-                    //Thread.Sleep(15 * 60 * 1000);
+                    var p = _players.First(x => x.id == player.id);
+                    p.inventory[(int)currencyEnum.gold] += (int)(p.level * p.level) / 2 + 1;
                 }
-                Thread.Sleep(1000);
+                Console.WriteLine("delivered passive income to " + _onlinePlayers.Count + " players.");
             }
         }
 
@@ -178,8 +219,12 @@ namespace spookyWebServer
             if (!_onlinePlayers.Any(x => x.id == id))
             {
                 _onlinePlayers.Add(_players[id]);
+                if (_onlinePlayers.Count == 5)
+                {
+                    _players.ForEach(x => x.achievements.Add((int)achievementsEnum.partyoffive));
+                }
 
-                while (fileLock) ;
+                while (fileLock) Thread.Sleep(100);
                 fileLock = true;
                 var f=File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
                 json.write(f, _onlinePlayers);
@@ -190,7 +235,7 @@ namespace spookyWebServer
 
         private static void unlock(HttpListenerContext context)
         {
-            var player = _onlinePlayers[int.Parse( context.Request.QueryString["userId"])];
+            var player = _players[int.Parse( context.Request.QueryString["userId"])];
             var code = context.Request.QueryString["code"];
             switch (code)
             {
@@ -251,7 +296,7 @@ namespace spookyWebServer
             switch (context.Request.HttpMethod)
             {
                 case "GET":
-                    json.write(context.Response.OutputStream, _onlinePlayers);
+                    json.write(context.Response.OutputStream, _players.Where(x=>_onlinePlayers.Any(y=>y.id==x.id)));
                     break;
             }
         }
@@ -262,7 +307,7 @@ namespace spookyWebServer
             {
                 case "GET":
                     var user = int.Parse(context.Request.QueryString[0]);
-                    json.write(context.Response.OutputStream, _onlinePlayers[user].notifications);
+                    json.write(context.Response.OutputStream, _players[user].notifications);
                     break;
             }
         }
@@ -284,12 +329,13 @@ namespace spookyWebServer
                     {
 
                         var challenge = json.read<duel>(context.Request.InputStream);
+                        challenge.id = Guid.NewGuid().ToString();
                         activeDuelChallenges.Add(challenge);
                         foreach (var notificationList in _notifications)
                         {
-                            var target = _onlinePlayers[challenge.target];
-                            var challenger = _onlinePlayers[challenge.src];
-                            foreach (var p in _onlinePlayers)
+                            var target = _players[challenge.target];
+                            var challenger = _players[challenge.src];
+                            foreach (var p in _players)
                             {
                                 var n = new notification();
                                 if (p == target)
@@ -309,8 +355,8 @@ namespace spookyWebServer
                     }
                     break;
                 case "DELETE":
-                    //duel complete
                     {
+                        var duelId = context.Request.QueryString["duelId"];
                         var challenge = json.read<duel>(context.Request.InputStream);
                         var target = _players[challenge.target];
                         var challenger = _players[challenge.src];
@@ -327,7 +373,7 @@ namespace spookyWebServer
                         {
                             challenger.inventory = challenger.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x + y).ToArray();
                             target.inventory = target.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x - y).ToArray();
-                            foreach (var player in _onlinePlayers)
+                            foreach (var player in _players)
                             {
                                 var n = new notification();
                                 n.text = challenger.characterName + " has defeated " + target.characterName + " in a duel!";
@@ -338,7 +384,7 @@ namespace spookyWebServer
                         {
                             challenger.inventory = challenger.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x - y).ToArray();
                             target.inventory = target.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x + y).ToArray();
-                            foreach(var player in _onlinePlayers)
+                            foreach (var player in _players)
                             {
                                 var n = new notification();
                                 n.text = target.characterName + " has defeated " + challenger.characterName + " in a duel!";
@@ -363,9 +409,7 @@ namespace spookyWebServer
                     json.write(
                         context.Response.OutputStream,
                         activeDuelChallenges.Where(x=>
-                            x.src==int.Parse( 
-                                context.Request.QueryString["duelId"])
-                                ));
+                            x.target==playerId));
                     break;
             }
         }

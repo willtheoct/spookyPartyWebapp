@@ -21,7 +21,7 @@ export class PlayerlistComponent implements OnInit {
 
   ngOnInit() {
     if (this.players.length === 0) {
-      this.http.get<PartyGoer[]>(AppComponent.hostServer + "players").subscribe(x => {
+      this.http.get<PartyGoer[]>(AppComponent.hostServer + "onlinePlayers").subscribe(x => {
         this.players = x;
         PartyGoer.onlinePlayers = x;
       });
