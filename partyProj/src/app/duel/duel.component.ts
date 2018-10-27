@@ -17,10 +17,21 @@ import { duel } from '../../models/duel.model';
 export class DuelComponent implements OnInit {
   ngOnInit(): void {
 
-    this.http.get<duel[]>("duels?playerId=" + AppComponent.userId).subscribe(x => this.availableDuels = x);
+    interval(1000).subscribe(() => {
+      this.availableDuelists = PartyGoer.onlinePlayers.filter(x => x.id !== AppComponent.userId);
+      this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
+    });
 
-    this.availableDuelists = PartyGoer.onlinePlayers.filter(x => x.id !== AppComponent.userId);
-    this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
+
+    this.http.get<duel[]>(AppComponent.hostServer + "duels?playerId=" + AppComponent.userId).subscribe(x => {
+      x.forEach(y => {
+        if (y.description.length == 0) {
+          y.description = "A Duel";
+        }
+      });
+      this.availableDuels = x;
+    });
+
 
     let regenPlaceholderFunc = (v: number) => {
       let x = ["Smash Bros?", "Go Fish?", "Swords?", "Staring Contest?", "Rock Paper Scissors?", "Chess?", "Fisticuffs?", "Chicken?", "Yu-Gi-Oh!?"];
@@ -69,10 +80,24 @@ export class DuelComponent implements OnInit {
 
   availableDuels: duel[] = [];
   selectedDuel: duel;
-  playersOf(d: duel) {
-    return PartyGoer.onlinePlayers.filter(x => x.id == d.src || x.id == d.target);
+
+  nameOfPlayer(id: number) {
+    return PartyGoer.allPlayers[id].characterName;
   }
-  decideDuel(winner: PartyGoer) {
-    this.http.delete(AppComponent.hostServer + "duel?winner=" + winner.id);
+  win(d: duel) {
+    this.http.get(AppComponent.hostServer + "duelComplete?winner=" + AppComponent.userId + "&duelId=" + d.id).subscribe(() => {
+      this.router.navigate(["/dashboard"]);
+    });
   }
+  lose(d: duel) {
+    this.http.get(AppComponent.hostServer + "duelComplete?winner=" + d.src + "&duelId=" + d.id).subscribe(() => {
+      this.router.navigate(["/dashboard"]);
+    });
+  }
+  decline(d: duel) {
+    this.http.delete(AppComponent.hostServer + "duelChallenge?duelId=" + d.id).subscribe(() => {
+      this.router.navigate(["/dashboard"]);
+    });
+  }
+
 }

@@ -16,7 +16,7 @@ import { currencies } from '../../models/currency.model';
 export class DashboardComponent implements OnInit {
   static notifications: notification[] = [];
   notifications: notification[] = [];
-  playerId: playerIds = AppComponent.userId;
+  playerId: number = AppComponent.userId;
   tnl = "";
   thisPlayer: PartyGoer;
 
@@ -28,8 +28,7 @@ export class DashboardComponent implements OnInit {
       if (AppComponent.loggedIn) {
         this.http.get<notification[]>(AppComponent.hostServer + "notifications?user=" + AppComponent.userId || "").subscribe(x => {
           if (isNullOrUndefined(x)) x = [];
-          x = x.reverse();
-          console.log(x);
+          x = x.reverse().slice(0, 10);
           DashboardComponent.notifications = x;
           this.notifications = x;
           this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
@@ -39,9 +38,14 @@ export class DashboardComponent implements OnInit {
       }
     });
     this.notifications = DashboardComponent.notifications;
-    this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
-    this.tnl = (this.thisPlayer.level * this.thisPlayer.level + 3) + " Gold, 1 Dubloon";
-    if (this.thisPlayer.inventory[currencies.crystals] > 0) this.tnl = "1 Crystal";
+    this.playerId = AppComponent.userId;
+    console.log(this.playerId);
+    if (PartyGoer.onlinePlayers.length > 0) {
+
+      this.thisPlayer = PartyGoer.onlinePlayers.find(x => x.id === AppComponent.userId);
+      this.tnl = (this.thisPlayer.level * this.thisPlayer.level + 3) + " Gold, 1 Dubloon";
+      if (this.thisPlayer.inventory[currencies.crystals] > 0) this.tnl = "1 Crystal";
+    }
   }
 
 

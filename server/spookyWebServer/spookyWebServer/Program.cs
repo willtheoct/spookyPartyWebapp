@@ -21,6 +21,13 @@ namespace spookyWebServer
         static List<PartyGoer>_players = new List< PartyGoer>() { };
         static List<PartyGoer> _onlinePlayers = new List<PartyGoer>() { };
         static bool fileLock = false;
+        static List<string> usedCodes = new List<string>();
+        static List<string> reusableCodes = new List<string>() {"protein",
+"devourer",
+"staff",
+"thief",
+"sorry",
+"grind" };
 
 #if serveStaticPages
         static Dictionary<string, byte[]> serverPages = new Dictionary<string, byte[]>();
@@ -106,6 +113,8 @@ namespace spookyWebServer
                 {
                     case "duelChallenge":
                         duelChallenge(context); break;
+                    case "duelComplete":
+                        duelComplete(context); break;
                     case "duels":
                         duels(context); break;
                     case "notifications":
@@ -148,6 +157,49 @@ namespace spookyWebServer
             }
         }
 
+        private static void duelComplete(HttpListenerContext context)
+        {
+            var duelId = context.Request.QueryString["duelId"];
+            if (!activeDuelChallenges.Any(x => x.id == duelId)) return;
+            var challenge = activeDuelChallenges.First(x => x.id == duelId);
+            var target = _players[challenge.target];
+            var challenger = _players[challenge.src];
+            var duelDesc = challenge.description;
+            challenge.winner=int.Parse( context.Request.QueryString["winner"]);
+            target.duelCount++;
+            challenger.duelCount++;
+            foreach (var player in new PartyGoer[] { target, challenger })
+            {
+                if (player.duelCount == 5) player.achievements.Add((int)achievementsEnum.galois);
+                if (player.duelCount == 10) player.achievements.Add((int)achievementsEnum.duelist);
+                if (player.duelCount == 15) player.achievements.Add((int)achievementsEnum.champion);
+            }
+
+            if (challenge.src == challenge.winner)
+            {
+                challenger.inventory = challenger.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x + y).ToArray();
+                target.inventory = target.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x - y).ToArray();
+                foreach (var player in _players)
+                {
+                    var n = new notification();
+                    n.text = challenger.characterName + " has defeated " + target.characterName + " in !";
+                    player.notifications.Add(n);
+                }
+            }
+            else
+            {
+                challenger.inventory = challenger.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x - y).ToArray();
+                target.inventory = target.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x + y).ToArray();
+                foreach (var player in _players)
+                {
+                    var n = new notification();
+                    n.text = target.characterName + " has defeated " + challenger.characterName + " in a duel!";
+                    player.notifications.Add(n);
+                }
+            }
+            activeDuelChallenges.RemoveAll(x => x.id == duelId);
+        }
+
         private static void levelUp(HttpListenerContext context)
         {
             var playerId = int.Parse( context.Request.QueryString["userId"]);
@@ -180,15 +232,21 @@ namespace spookyWebServer
                 while (fileLock) Thread.Sleep(100);
                 fileLock = true;
                 Console.WriteLine("backing up.");
+                File.Delete("onlinePlayers.bak");
+                File.Move("onlinePlayers.json", "onlinePlayers.bak");
                 var onlinePlayerFile = File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
                 json.write(onlinePlayerFile, _onlinePlayers);
                 onlinePlayerFile.Close();
 
+                File.Delete("players.bak");
+                File.Move("players.json", "players.bak");
                 var playerFile = File.Open("players.json", FileMode.OpenOrCreate);
                 json.write(playerFile, _players.ToArray());
                 Thread.Sleep(1000);
                 playerFile.Close();
-                
+
+                File.Delete("duelChallenges.bak");
+                File.Move("duelChallenges.json", "duelChallenges.bak");
                 var db = File.Open("duelChallenges.json", FileMode.OpenOrCreate);
                 json.write(db, activeDuelChallenges);
                 db.Close();
@@ -223,13 +281,6 @@ namespace spookyWebServer
                 {
                     _players.ForEach(x => x.achievements.Add((int)achievementsEnum.partyoffive));
                 }
-
-                while (fileLock) Thread.Sleep(100);
-                fileLock = true;
-                var f=File.Open("onlinePlayers.json", FileMode.OpenOrCreate);
-                json.write(f, _onlinePlayers);
-                f.Close();
-                fileLock = false;
             }
         }
 
@@ -237,6 +288,11 @@ namespace spookyWebServer
         {
             var player = _players[int.Parse( context.Request.QueryString["userId"])];
             var code = context.Request.QueryString["code"];
+            if (usedCodes.Contains(code) &&! reusableCodes.Contains(code))
+            {
+                json.write(context.Response.OutputStream, "Someone has already entered that code.");return;
+            }
+            usedCodes.Add(code);
             switch (code)
             {
                 case "sylvester":
@@ -267,8 +323,107 @@ namespace spookyWebServer
                     json.write(context.Response.OutputStream, "You looted sonata the slime for 4 gold!");
                     player.inventory[(int)currencyEnum.gold] += 4;
                     break;
+                case "simon":
+                    json.write(context.Response.OutputStream, "Simon ate 4 gold, it's yours!");
+                    player.inventory[(int)currencyEnum.gold] += 4;
+                    break;
+                case "steven":
+                    json.write(context.Response.OutputStream, "Steven burst into 3 gold!");
+                    player.inventory[(int)currencyEnum.gold] +=3;
+                    break;
+                case "sunny":
+                    json.write(context.Response.OutputStream, "Sunny had 5 gold in his wallet!");
+                    player.inventory[(int)currencyEnum.gold] += 5;
+                    break;
+                case "sally":
+                    json.write(context.Response.OutputStream, "Sally was carrying 3 gold in rent money!");
+                    player.inventory[(int)currencyEnum.gold] += 3;
+                    break;
+                case "scully":
+                    json.write(context.Response.OutputStream, "Scully has a drinking problem and only 1 gold.");
+                    player.inventory[(int)currencyEnum.gold] += 1;
+                    break;
+                case "sly":
+                    json.write(context.Response.OutputStream, "Sly had life insurance worth 4 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 4;
+                    break;
+                case "arachnid":
+                    json.write(context.Response.OutputStream, "The golden spider had 10 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 10;
+                    break;
+                case "sputnik":
+                    json.write(context.Response.OutputStream, "Sputnik the spider had 4 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 4;
+                    break;
+                case "seth":
+                    json.write(context.Response.OutputStream, "Seth had 4 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 4;
+                    break;
+                case "sage":
+                    json.write(context.Response.OutputStream, "Sage had 4 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 4;
+                    break;
+                case "sandy":
+                    json.write(context.Response.OutputStream, "Sandy had 5 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 5;
+                    break;
+                case "sebastian":
+                    json.write(context.Response.OutputStream, "Sebastian carried 5 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 5;
+                    break;
+                case ";)":
+                    json.write(context.Response.OutputStream, "You found 30 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 30;
+                    break;
+                case "sight":
+                    json.write(context.Response.OutputStream, "You found 10 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 10;
+                    break;
+                case "hunter":
+                    json.write(context.Response.OutputStream, "You found 12 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 12;
+                    break;
+                case "loot":
+                    json.write(context.Response.OutputStream, "You found 9 gold just sitting there!");
+                    player.inventory[(int)currencyEnum.gold] += 9;
+                    break;
+                case "hear":
+                    json.write(context.Response.OutputStream, "You found 7 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 7;
+                    break;
+                case "voucher":
+                    json.write(context.Response.OutputStream, "You redeemed it for 10 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 10;
+                    break;
+                case "this":
+                    json.write(context.Response.OutputStream, "You redeemed it for 10 gold!");
+                    player.inventory[(int)currencyEnum.gold] += 10;
+                    break;
+                case "grind":
+                    json.write(context.Response.OutputStream, "Achievement unlocked!");
+                    player.achievements.Add((int)achievementsEnum.grinding);
+                    break;
+                case "aimbot":
+                    json.write(context.Response.OutputStream, "Achievement unlocked! You get 10 gold.");
+                    player.achievements.Add((int)achievementsEnum.aimbot);
+                    player.inventory[(int)currencyEnum.gold] += 10;
+                    break;
+                case "sorry":
+                    json.write(context.Response.OutputStream, "Achievement unlocked!");
+                    _players.ForEach(x => x.achievements.Add((int)achievementsEnum.breaksomething));
+                    break;
                 case "thief":
-                    player.achievements.Add((int)achievementsEnum.sneakthief); break;
+                    json.write(context.Response.OutputStream, "Achievement unlocked! Shame on you.");
+                    _players.ForEach(x => x.achievements.Add((int)achievementsEnum.sneakthief));break;
+                case "staff":
+                    json.write(context.Response.OutputStream, "Achievement unlocked!");
+                    player.achievements.Add((int)achievementsEnum.hairywizard); break;
+                case "devourer":
+                    json.write(context.Response.OutputStream, "Achievement unlocked!");
+                    _players.ForEach(x => x.achievements.Add((int)achievementsEnum.devourer)); break;
+                case "protein":
+                    json.write(context.Response.OutputStream, "Achievement unlocked!");
+                    player.achievements.Add((int)achievementsEnum.showoff); break;
 
                 default:
                     json.write(context.Response.OutputStream, "You didn't unlock anything...");
@@ -357,40 +512,7 @@ namespace spookyWebServer
                 case "DELETE":
                     {
                         var duelId = context.Request.QueryString["duelId"];
-                        var challenge = json.read<duel>(context.Request.InputStream);
-                        var target = _players[challenge.target];
-                        var challenger = _players[challenge.src];
-                        target.duelCount++;
-                        challenger.duelCount++;
-                        foreach (var player in new PartyGoer[] { target, challenger })
-                        {
-                            if (player.duelCount == 5) player.achievements.Add((int)achievementsEnum.galois);
-                            if (player.duelCount == 10) player.achievements.Add((int)achievementsEnum.duelist);
-                            if (player.duelCount == 15) player.achievements.Add((int)achievementsEnum.champion);
-                        }
-
-                        if (challenge.src == challenge.winner)
-                        {
-                            challenger.inventory = challenger.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x + y).ToArray();
-                            target.inventory = target.inventory.Zip(challenge.targetWager.Select(x => x.count), (x, y) => x - y).ToArray();
-                            foreach (var player in _players)
-                            {
-                                var n = new notification();
-                                n.text = challenger.characterName + " has defeated " + target.characterName + " in a duel!";
-                                player.notifications.Add(n);
-                            }
-                        }
-                        else
-                        {
-                            challenger.inventory = challenger.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x - y).ToArray();
-                            target.inventory = target.inventory.Zip(challenge.srcWager.Select(x => x.count), (x, y) => x + y).ToArray();
-                            foreach (var player in _players)
-                            {
-                                var n = new notification();
-                                n.text = target.characterName + " has defeated " + challenger.characterName + " in a duel!";
-                                player.notifications.Add(n);
-                            }
-                        }
+                        activeDuelChallenges.RemoveAll(x => x.id == duelId);
                     }
                     break;
                 case "GET":

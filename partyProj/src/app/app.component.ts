@@ -20,14 +20,15 @@ export class
   }
 
   ngOnInit(): void {
+    let ids = localStorage.getItem("loginId");
+    let id = Number.parseInt(ids);
+    if (!isNaN(id)) {
+      this.login(id);
+    }
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "players")
       .subscribe(x => {
         PartyGoer.allPlayers = x;
-        let ids = localStorage.getItem("loginId");
-        let id = Number.parseInt(ids);
-        if (!isNaN(id)) {
-          this.login(id);
-        }
+        AppComponent.username = PartyGoer.allPlayers[AppComponent.userId].characterName;
       });
     this.http.get<PartyGoer[]>(AppComponent.hostServer + "onlinePlayers")
       .subscribe(x => {
@@ -42,14 +43,15 @@ export class
   passphrase = "";
   loginFailed = 0;
   static username = "";
-  static userId: playerIds = 0;
-  static hostServer = "http://localhost:8220/";
+  static userId: number = 0;
+  static hostServer = "http://magiccrystalball:8220/";
+  //static hostServer = "http://localhost:8220/";
   static playerObservers = [];
 
 
   tryLogin() {
     console.log(PartyGoer.allPlayers.map(x => x.id));
-    let loginTarget = PartyGoer.allPlayers.find(x => x.passPhrase === this.passphrase);
+    let loginTarget = PartyGoer.allPlayers.find(x => x.passPhrase === this.passphrase.toLowerCase());
     if (isNullOrUndefined(loginTarget)) {
       this.loginFailed++; timer(2000).subscribe(() => { this.loginFailed--; }); return;
     }
@@ -61,7 +63,6 @@ export class
   login(id: number) {
     console.log("logging in with ID " + id);
     AppComponent.userId = id;
-    AppComponent.username = PartyGoer.allPlayers[id].characterName;
     localStorage.setItem("LoggedIn", "true");
     localStorage.setItem("loginId", id.toString());
     this.loggedIn = true;

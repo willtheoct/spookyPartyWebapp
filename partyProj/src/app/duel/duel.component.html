@@ -1,44 +1,73 @@
-<div *ngIf="!target" class="flex-column">
-  <h4>
-    Duel...
-  </h4>
-  <app-playerlist (selectedPlayer)="selectTarget($event)" [(players)]="availableDuelists">
-  </app-playerlist>
-</div>
-<div *ngIf="target &&! wagered" class="flex-column" style="height: 100vh; overflow: scroll">
+<div *ngIf="availableDuels.length==0">
 
-  <div class="flex-column">
-    <label for="duelDesc">What kind of duel?</label>
-    <div class="flex-row">
+  <div *ngIf="!target" class="flex-column">
+    <h4>
+      Duel...
+    </h4>
+    <app-playerlist (selectedPlayer)="selectTarget($event)" [(players)]="availableDuelists">
+    </app-playerlist>
+  </div>
+  <div *ngIf="target &&! wagered" class="flex-column" style="height: 100vh; overflow: scroll">
 
-      <input type="text" id="duelDesc" [placeholder]="randomPlaceholder" [(ngModel)]="description">
+    <div class="flex-column">
+      <label for="duelDesc">What kind of duel?</label>
       <div class="flex-row">
-        <button type="button" class="btn btn-primary" (click)="wagered=true">
-          OKAY
-        </button>
+
+        <input type="text" id="duelDesc" [placeholder]="randomPlaceholder" [(ngModel)]="description">
+        <div class="flex-row">
+          <button type="button" class="btn btn-primary" (click)="wagered=true">
+            OKAY
+          </button>
+        </div>
       </div>
     </div>
+    <div class="flex-column" style="overflow: scroll; overflow-x: hidden;">
+
+      <h3>Wager your...</h3>
+      <app-inventory [(player)]="thisPlayer" [(selections)]="myInventoryWager">
+
+      </app-inventory>
+      <h3>For their...</h3>
+      <app-inventory [(player)]="target" [(selections)]="targetInventoryWager">
+
+      </app-inventory>
+    </div>
   </div>
-  <div class="flex-column" style="overflow: scroll; overflow-x: hidden;">
+  <div *ngIf="wagered" style="height: 100%" class="flex-column">
+    <button type="button" class="btn btn-danger" style="width: 9em; justify-self: left" (click)="wagered=false">
+      Edit Wager
+    </button>
+    <h4>
+      Select a witness
+    </h4>
+    <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
 
-    <h3>Wager your...</h3>
-    <app-inventory [(player)]="thisPlayer" [(selections)]="myInventoryWager">
-
-    </app-inventory>
-    <h3>For their...</h3>
-    <app-inventory [(player)]="target" [(selections)]="targetInventoryWager">
-
-    </app-inventory>
+    </app-playerlist>
   </div>
 </div>
-<div *ngIf="wagered" style="height: 100%" class="flex-column">
-  <button type="button" class="btn btn-danger" style="width: 9em; justify-self: left" (click)="wagered=false">
-    Edit Wager
-  </button>
-  <h4>
-    Select a witness
-  </h4>
-  <app-playerlist (selectedPlayer)="selectRef($event)" [(players)]="availableRefs">
 
-  </app-playerlist>
+<div *ngIf="availableDuels.length>0" class="flex-column dChallenge">
+  <h4>
+    You have been challenged to:
+  </h4>
+  <div *ngFor="let c of availableDuels" class="flex-column">
+    <h5>
+      {{c.description}}
+    </h5>
+    <div class="w-100"></div>
+    by {{nameOfPlayer(c.src)}}
+    <div class="w-100"></div>
+    <div class="row">
+      <button type="button" class="btn btn-primary" (click)="win(c)">
+        I won!
+      </button>
+      <button type="button" class="btn btn-primary" (click)="lose(c)">
+        I lost.
+      </button>
+    </div>
+    <div class="w-100"></div>
+    <button type="button" class="btn btn-danger" (click)="decline(c)">
+      Decline
+    </button>
+  </div>
 </div>
